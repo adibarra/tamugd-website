@@ -1,0 +1,12 @@
+# keys and certs
+*.pem
+
+# config files
+mysql_config.*
+server_config.*
+
+# no need to minify server.js (using autominifier)
+server.min.js
+
+# node dependencies
+node_modules/
