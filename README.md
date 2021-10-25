@@ -1,5 +1,5 @@
 # TAMU-GradeDistribution-Website
-The goal of this project is to create a website which is capable of creating visualizations for the grade distribution reports published by Texas A&M University's Registrar's office.
+This project is dedicated to helping analyze the massive amounts of data released every semester by Texas A&M University's Registrar's office.
 
 ---
 
