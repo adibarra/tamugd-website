@@ -8,7 +8,7 @@ This project is dedicated to helping analyze the massive amounts of data release
  - Fully compatible with mobile devices
  - Presents multiple *useful* forms of analysis for course data
 
-## TODO:
+## Version 1.0 Roadmap:
 - [x] http header hardening
 - [x] rewrite server with expressjs
 - [x] use media queries to modify layout to fit better on mobile devices
