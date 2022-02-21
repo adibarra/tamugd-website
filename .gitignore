@@ -1,5 +1,6 @@
-# keys and certs
-*.pem
+# node dependencies
+node_modules/
+package-lock.json
 
 # config files
 server_config.js
@@ -9,7 +10,3 @@ mysql_config.js
 server.min.js
 server_config.min.js
 mysql_config.min.js
-
-# node dependencies
-node_modules/
-package-lock.json
