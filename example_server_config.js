@@ -1,2 +1,3 @@
-module.exports.hostname = 'localhost';
-module.exports.port = 80;
+module.exports.serverConfig = {
+    port       : '5000',
+};
