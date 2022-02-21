@@ -267,8 +267,8 @@ function regenGPAPlotChartColors() {
     });
 }
 
-// generate datasets to use in gpa plot chart
 // FIXME: remake this unoptimized mess
+// generate datasets to use in gpa plot chart
 function getGPAPlotChartDataset(years, semesters, professors, callback) {
     years = interpolateNumArray(years,1);
     let rawData = dbRawData
@@ -445,7 +445,8 @@ function getCourseDifficultyChartDataset(years, semesters, honors, callback) {
     }
     avgGPA = (avgGPA/count);
 
-    //TODO: improve courseDiff formula later
+    // TODO: improve courseDiff formula later
+    // courseDiff = # of conditions passed / 10;
     courseDiff += 1;
     if (0.075 < numStudentsFail/(numStudentsPass+numStudentsFail)) courseDiff += 1; // > 07.5% of students fail/Q
     if (0.100 < numStudentsFail/(numStudentsPass+numStudentsFail)) courseDiff += 1; // > 10.0% of students fail/Q
@@ -561,8 +562,8 @@ function getCourseData() {
                 data: getDBRawData(),
             }).forceRender();
         }
+        autoPopulateProfs();
     });
-    $('#professor-select').trigger('chosen:open');
     updateThemeMode();
 }
 
