@@ -156,7 +156,7 @@
 .header-logo {
     align-items: center;
     justify-content: left;
-    margin: 5px 10px 5px 5px;
+    margin: 5px 10px 0 5px;
 }
 
 .header-text {
@@ -184,7 +184,7 @@
     position: absolute;
     top: 33%;
     left: 50%;
-    transform: translate(-50%, -50%);
+    transform: translate(-50%, 0%);
     border: 1px solid var(--border-color2);
     border-radius: 5px;
     padding: 5px 5px 5px 5px;
@@ -195,14 +195,6 @@
     border: 1px solid var(--border-color2);
     border-radius: 5px;
     padding: 5px 15px 15px 15px;
-}
-
-.footer-container {
-    width: 100%;
-    display: inline;
-    align-items: center;
-    justify-content: center;
-    margin-top: auto;
 }
 
 .footer-container {
@@ -231,7 +223,7 @@
 
 .footer-logo {
     align-items: center;
-    margin: 10px;
+    margin: 5px 5px 0 5px;
 }
 
 .footer-left,.footer-right {
