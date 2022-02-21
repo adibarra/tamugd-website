@@ -49,7 +49,7 @@
                 </div>
                 <div class="header-container">
                     <div class="header-logo">
-                        <a href="/"><img src="/images/img/tamugd-logo-65.png?v=1.0" alt='TAMUGD Logo' width="65" height="65"></a>
+                        <a href="/"><img src="/images/img/tamugd-logo-transparent.svg?v=1.0" alt='TAMUGD Logo' width="65" height="65"></a>
                     </div>
                     <div class="header-text">
                         <h1>&nbsp;TAMU Grade Distribution</h1>
@@ -178,14 +178,14 @@
                 <div class="footer-bar">
                     <div class="footer-left">
                         <div class="footer-subtext-left">
-                            <p>&nbsp;</p>
+                            <p><span class="link-underline-light"><a href="https://github.com/TAMU-GradeDistribution">Project Repo</a></span></p>
                             <p>Code licensed under the <span class="link-underline-light"><a href="https://github.com/TAMU-GradeDistribution/TAMU-GradeDistribution-Website/blob/main/LICENSE.md">MIT license.</a></span></p>
                         </div>
                     </div>
 
                     <div class="footer-logo">
                         <a href="/">
-                            <img src="/images/img/tamugd-logo-65.png?v=1.0" alt='TAMUGD Logo' width="40" height="40">
+                            <img src="/images/img/tamugd-logo-transparent.svg?v=1.0" alt='TAMUGD Logo' width="40" height="40">
                         </a>
                     </div>
 
@@ -193,11 +193,10 @@
                         <div class="footer-subtext-right">
                             <p>
                                 <i class="fa fa-github fa-lg color-white" title="Github logo"></i>
-                                <span class="link-underline-light"><a href="https://github.com/TAMU-GradeDistribution">Project Repo</a></span>
+                                <span class="link-underline-light"><a href="https://github.com/adibarra">@adibarra</a></span>
                             </p>
                             <p>
                                 <i class="fa fa-github fa-lg color-white" title="Github logo"></i>
-                                <span class="link-underline-light"><a href="https://github.com/adibarra">@adibarra</a></span>
                                 <span class="link-underline-light"><a href="https://github.com/thestarch2">@thestarch2</a></span>
                             </p>
                         </div>
@@ -241,7 +240,7 @@
                 width: $("#courseGpaChartCanvas").width(),
                 titleBackground: 'rgba(102,102,102,0.66)',
                 background: 'rgba(102,102,102,0.66)',
-                titleContent: 'How to interpret plot:',
+                titleContent: 'How to interpret:',
                 content: 'The yellow area indicates the range between the highest'
                 +' and lowest GPAs acheived during the selected years and semesters.'
                 +' The small green bar indicates the average GPA which was acheived.',
@@ -251,7 +250,7 @@
                 width: $("#courseLetterChartCanvas").width(),
                 titleBackground: 'rgba(102,102,102,0.66)',
                 background: 'rgba(102,102,102,0.66)',
-                titleContent: 'How to interpret plot:',
+                titleContent: 'How to interpret:',
                 content: 'There is a section with a corresponding color for each of the'
                 +' following grade letters: [A, B, C, D, F, Q]. This plot shows the percentage'
                 +' at which each grade letter was recieved relative to each other.',
@@ -262,10 +261,10 @@
                 titleBackground: 'rgba(102,102,102,0.66)',
                 background: 'rgba(102,102,102,0.66)',
                 tooltipHover: true,
-                titleContent: 'How to interpret plot:',
+                titleContent: 'How to interpret:',
                 content: 'This plot takes a few of the statistics for the course and plugs them into the following'
                 +' <span class="link-underline-neutral">'
-                +'<a href="https://github.com/TAMU-GradeDistribution/TAMU-GradeDistribution-Website/blob/main/public/scripts/main.js#L420">'
+                +'<a href="https://github.com/TAMU-GradeDistribution/TAMU-GradeDistribution-Website/blob/main/public/scripts/main.js#L449">'
                 +' formula</a></span> to determine a relative difficulty score for each course.',
             });
 
@@ -432,7 +431,7 @@
                             display:false
                         },
                         tooltip: {
-                            enabled: true,
+                            enabled: false,
                             callbacks: {
                                 label: function(ctx) {
                                     return ctx.dataset.label;
