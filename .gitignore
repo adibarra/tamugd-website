@@ -2,11 +2,13 @@
 *.pem
 
 # config files
-mysql_config.*
-server_config.*
+server_config.js
+mysql_config.js
 
-# no need to minify server.js (using autominifier)
+# ignore some js files (using autominifier)
 server.min.js
+server_config.min.js
+mysql_config.min.js
 
 # node dependencies
 node_modules/
