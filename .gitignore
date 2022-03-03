@@ -5,9 +5,10 @@ sitemap.xml
 server_config.js
 mysql_config.js
 
-# ignore some minified js files
+# ignore some minified files
 /*.min.js
 */bundle/*.min.js
+*/bundle/*.min.css
 
 # node dependencies
 node_modules/
