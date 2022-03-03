@@ -1,0 +1,128 @@
+/*
+jRange - Awesome range control
+
+Written by
+----------
+Nitin Hayaran (nitinhayaran@gmail.com)
+
+Licensed under the MIT LICENSE.
+
+@author Nitin Hayaran
+@version 0.1-RELEASE
+
+Dependencies
+------------
+jQuery (http://jquery.com)
+*/
+
+.slider-container {
+    width: 100%;
+    font-family: "verdana";
+    margin-bottom: 12px;
+}
+
+.slider-container .back-bar {
+    height: 10px;
+    position: relative;
+}
+
+.slider-container .back-bar .selected-bar {
+    position: absolute;
+    height: 100%;
+}
+
+.slider-container .back-bar .pointer {
+    position: absolute;
+    width: 10px;
+    height: 10px;
+    background-color: red;
+    cursor: pointer;
+    opacity: 1;
+    z-index: 2;
+}
+
+.slider-container .back-bar .pointer.last-active {
+    z-index: 3;
+}
+
+.slider-container .back-bar .pointer-label {
+    position: absolute;
+    top: -17px;
+    font-size: 8px;
+    background: #FFFFFF;
+    white-space: nowrap;
+    line-height: 1;
+}
+
+.slider-container .back-bar .focused {
+    z-index: 10;
+}
+
+.slider-container .clickable-dummy {
+    cursor: pointer;
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    z-index: 1;
+}
+
+.slider-container .scale {
+    top: 2px;
+    position: relative;
+}
+
+.slider-container .scale span {
+    position: absolute;
+    height: 5px;
+    border-left: 1px solid #999999;
+    font-size: 0;
+}
+
+.slider-container .scale ins {
+    font-size: 12px;
+    text-decoration: none;
+    position: absolute;
+    left: -2px;
+    top: 5px;
+    color: #999999;
+    line-height: 1;
+}
+
+.theme-default .back-bar {
+    height: 6px;
+    border-radius: 2px;
+    background-color: #DFDFDF;
+}
+
+.theme-default .back-bar .selected-bar {
+    border-radius: 2px;
+    background-color: #0066FF;
+}
+
+.theme-default .back-bar .pointer {
+    width: 14px;
+    height: 14px;
+    top: -5px;
+    -webkit-box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    box-sizing: border-box;
+    border-radius: 10px;
+    border: 1px solid #AAAAAA;
+    background-color: #E7E7E7;
+}
+
+.theme-default .back-bar .pointer-label {
+    color: #999999;
+}
+
+.theme-default .back-bar .focused {
+    color: #333333;
+}
+
+.theme-default .scale span {
+    border-left: 1px solid #000000;
+}
+
+.theme-default .scale ins {
+    color: #000000;
+}

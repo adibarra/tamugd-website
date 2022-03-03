@@ -1,0 +1,62 @@
+/*
+tipso - A Lightweight Responsive jQuery Tooltip Plugin v1.0.8
+Copyright (c) 2014-2015 Bojan Petkovski
+http://tipso.object505.com
+Licensed under the MIT license
+http://object505.mit-license.org/
+*/
+.tipso_bubble,
+.tipso_bubble>.tipso_arrow {
+    -webkit-box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    box-sizing: border-box;
+}
+
+.tipso_bubble {
+    position: absolute;
+    text-align: center;
+    border-radius: 6px;
+    z-index: 9999;
+}
+
+.tipso_style {
+    cursor: help;
+    border-bottom: 1px dotted;
+}
+
+.tipso_title {
+    border-radius: 6px 6px 0 0;
+}
+
+.tipso_content {
+    word-wrap: break-word;
+    padding: 0.5em;
+}
+
+.tipso_bubble>.tipso_arrow {
+    position: absolute;
+    width: 0;
+    height: 0;
+    border: 8px solid;
+    pointer-events: none;
+}
+
+.tipso_bubble.top>.tipso_arrow {
+    border-top-color: #000;
+    border-right-color: transparent;
+    border-left-color: transparent;
+    border-bottom-color: transparent;
+    top: 100%;
+    left: 50%;
+    margin-left: -8px;
+}
+
+.tipso_bubble.bottom>.tipso_arrow {
+    border-bottom-color: #000;
+    border-right-color: transparent;
+    border-left-color: transparent;
+    border-top-color: transparent;
+    bottom: 100%;
+    left: 50%;
+    margin-left: -8px;
+}
