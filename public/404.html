@@ -5,16 +5,13 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
         <title>TAMU Grade Distribution</title>
         
-        <!--css-->
+        <!--css and fonts-->
+        <link href="/css/fonts.min.css?v=1.0" rel="stylesheet" type="text/css">
+        <link href="/css/common.min.css?v=1.0" rel="stylesheet" type="text/css">
         <link href="/css/404.min.css?v=1.0" rel="stylesheet" type="text/css">
 
-        <!--fonts-->
-        <link href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet" type="text/css">
-        <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@600&display=swap" rel="stylesheet">
-        <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@700&display=swap" rel="stylesheet">
-
         <!--js-->
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+        <script async src="https://www.googletagmanager.com/gtag/js?id=G-HS51DZ5HEM"></script>
         <script src="/scripts/404.min.js?v=1.0"></script>
 
         <!--favicons-->
@@ -32,20 +29,18 @@
         <!--flex wrapper-->
         <div class="flex-wrapper">
             <!--header-->
-            <div class="header-bar">
-                <div class="header-container">
-                    <div>
-                        <div class="header-logo">
-                            <a href="/"><img src="/images/img/tamugd-logo-transparent.svg?v=1.0" alt='TAMUGD Logo' width="65" height="65"></a>
+            <div class="header-container">
+                <div class="toggle-switch" id='thememode_toggle'>
+                    <i class="fa fa-moon-o" aria-hidden="true"></i>&nbsp;<i class="fa fa-toggle-off" aria-hidden="true"></i>
+                </div>
+                <div class="header-bar">
+                    <div class="header-logo-container">
+                        <div class="header-logo" id="home_link1">
+                            <img id="favicon1" src="/images/img/tamugd-logo.svg?v=1.0" alt='TAMUGD Logo'>
                         </div>
                     </div>
-                    <div>
-                        <span class="header-text"><h1>&nbsp;TAMU Grade Distribution</h1></span>
-                    </div>
-                    <div>
-                        <span class="toggle-switch" id='darkmode-toggle' onclick="toggleDarkMode()">
-                            <i class="fa fa-sun-o" aria-hidden="true"></i>&nbsp;<i class="fa fa-toggle-off" aria-hidden="true"></i>
-                        </span>
+                    <div class="header-text">
+                        <h1>TAMU Grade Distribution</h1>
                     </div>
                 </div>
             </div>
@@ -54,53 +49,37 @@
             <!--begin site-->
             <div class="main-container-404">
                 <div class="centered-container-404">
-                    <div class="text-container-404">
-                        <h1>404: NOT FOUND</h1>
-                        <span class="link-underline-dark">
-                            <a href="/"><i class="fa fa-angle-double-left" title="go back"></i> go back</a>
-                        </span>
-                    </div>
+                    <h1><span class="color-error">404:</span> NOT FOUND</h1>
+                    <span class="color-standard"><a href="/"><i class="fa fa-angle-double-left" title="go back"></i> go back</a></span>
                 </div>
             </div>
 
             
             <!--footer-->
             <div class="footer-container">
+                <div class="footer-spacer"></div>
                 <div class="footer-bar">
                     <div class="footer-left">
                         <div class="footer-subtext-left">
-                            <p>&nbsp;</p>
-                            <p>Code licensed under the <span class="link-underline-light"><a href="https://github.com/TAMU-GradeDistribution/TAMU-GradeDistribution-Website/blob/main/LICENSE.md">MIT license.</a></span></p>
+                            <p><span class="color-standard"><a href="https://github.com/TAMU-GradeDistribution">Project Repo</a></span></p>
+                            <p>Code licensed under the <span class="color-standard"><a href="https://github.com/TAMU-GradeDistribution/TAMU-GradeDistribution-Website/blob/main/LICENSE.md">MIT license</a></span></p>
                         </div>
                     </div>
 
-                    <div class="footer-logo">
-                        <a href="/">
-                            <img src="/images/img/tamugd-logo-transparent.svg?v=1.0" width="40" height="40">
-                        </a>
+                    <div class="footer-logo-container">
+                        <div class="footer-logo" id="home_link2">
+                            <img id="favicon2" src="images/img/tamugd-logo.svg?v=1.0" alt='TAMUGD Logo'>
+                        </div>
                     </div>
 
                     <div class="footer-right">
                         <div class="footer-subtext-right">
-                            <p>
-                                <i class="fa fa-github fa-lg color-white" title="Github logo"></i>
-                                <span class="link-underline-light"><a href="https://github.com/TAMU-GradeDistribution">Project Repo</a></span>
-                            </p>
-                            <p>
-                                <i class="fa fa-github fa-lg color-white" title="Github logo"></i>
-                                <span class="link-underline-light"><a href="https://github.com/adibarra">@adibarra</a></span>
-                                <span class="link-underline-light"><a href="https://github.com/thestarch2">@thestarch2</a></span>
-                            </p>
+                            <p><i class="fa fa-github fa-lg" title="Github logo"></i><span class="color-standard"><a href="https://github.com/adibarra"> @adibarra</a></span></p>
+                            <p><i class="fa fa-github fa-lg" title="Github logo"></i><span class="color-standard"><a href="https://github.com/thestarch2"> @thestarch2</a></span></p>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-
-        <script>
-            if ((window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) || document.cookie.includes('darkmode=true')) {
-                toggleDarkMode();
-            }
-        </script>
     </body>
 </html>

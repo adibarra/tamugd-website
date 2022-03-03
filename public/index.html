@@ -3,29 +3,19 @@
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-        <meta name="description" content="Graphically analyze the grade distribution report for any course at Texas A&M University published by the registrar.">
+        <meta name="description" content="Graphically analyze the grade distribution reports for any course at Texas A&M University published by the registrar. Filter by professor, honors, year and semester.">
+        <meta name="keywords" content="Texas A&M Grade Distribution, TAMU Grade Distribution, TAMU GPA Distribution, Texas A&M University, A&M, tamu grades, grade report, graph">
         <title>TAMU Grade Distribution</title>
 
-        <!--css-->
-        <link href="https://cdnjs.cloudflare.com/ajax/libs/gridjs/5.0.2/theme/mermaid.min.css" rel="stylesheet" type="text/css">
-        <link href="https://cdnjs.cloudflare.com/ajax/libs/tipso/1.0.8/tipso.min.css" rel="stylesheet" type="text/css">
-        <link href="/css/chosen.min.css?v=1.0" rel="stylesheet" type="text/css">
-        <link href="/css/jquery.range.min.css?v=1.0" rel="stylesheet" type="text/css">
+        <!--css and fonts-->
+        <link href="/css/bundle.min.css?v=1.0" rel="stylesheet" type="text/css">
+        <link href="/css/fonts.min.css?v=1.0" rel="stylesheet" type="text/css">
+        <link href="/css/common.min.css?v=1.0" rel="stylesheet" type="text/css">
         <link href="/css/main.min.css?v=1.0" rel="stylesheet" type="text/css">
         
-        <!--fonts-->
-        <link href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet" type="text/css">
-        <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@600&display=swap" rel="stylesheet" type="text/css">
-        <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@700&display=swap" rel="stylesheet" type="text/css"> 
-        
         <!--js-->
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/gridjs/5.0.2/gridjs.production.min.js"></script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.5.1/chart.min.js"></script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/chartjs-plugin-datalabels/2.0.0/chartjs-plugin-datalabels.min.js"></script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/tipso/1.0.8/tipso.min.js"></script>
-        <script src="/scripts/jquery.range.min.js?v=1.0"></script>
-        <script src="/scripts/chosen.jquery.min.js?v=1.0"></script>
+        <script async src="https://www.googletagmanager.com/gtag/js?id=G-HS51DZ5HEM"></script>
+        <script src="/scripts/bundle.js?v=1.0"></script>
         <script src="/scripts/main.min.js?v=1.0"></script>
 
         <!--favicons-->
@@ -43,20 +33,21 @@
         <!--flex wrapper-->
         <div class="flex-wrapper">
             <!--header-->
-            <div class="header-bar">
-                <div class="toggle-switch" id='darkmode-toggle' onclick="toggleDarkMode()">
-                    <i class="fa fa-sun-o" aria-hidden="true"></i>&nbsp;<i class="fa fa-toggle-off" aria-hidden="true"></i>
+            <div class="header-container">
+                <div class="toggle-switch" id='thememode_toggle'>
+                    <i class="fa fa-moon-o" aria-hidden="true"></i>&nbsp;<i class="fa fa-toggle-off" aria-hidden="true"></i>
                 </div>
-                <div class="header-container">
-                    <div class="header-logo">
-                        <a href="/"><img src="/images/img/tamugd-logo-transparent.svg?v=1.0" alt='TAMUGD Logo' width="65" height="65"></a>
+                <div class="header-bar">
+                    <div class="header-logo-container">
+                        <div class="header-logo" id="home_link1">
+                            <img id="favicon1" src="/images/img/tamugd-logo.svg?v=1.0" alt='TAMUGD Logo'>
+                        </div>
                     </div>
                     <div class="header-text">
-                        <h1>&nbsp;TAMU Grade Distribution</h1>
+                        <h1>TAMU Grade Distribution</h1>
                     </div>
                 </div>
             </div>
-
 
             <!--begin site-->
             <div class="main-container">
@@ -82,7 +73,7 @@
                                         </td>
                                         <td></td>
                                         <td>
-                                            <button id="search-button" class="search-button" type="text" alt="Search" tabindex="0" onclick="getCourseData();">
+                                            <button id="search-button" class="search-button" type="submit" alt="Search" tabindex="0" onclick="getCourseData();">
                                                 <i class="fa fa-search fa-lg color-white" title="Search"></i>
                                             </button>
                                         </td>
@@ -104,7 +95,7 @@
                     <div class="settings-container">
                         <div class="professor-semester-container">
                             <div class="professor-select-container">
-                                <select id="professor-select" class="chosen-select" data-placeholder="Search for a course to start" tabindex="0" multiple></select>
+                                <select id="professor-select" class="chosen-select" data-placeholder="Search for a course to begin" tabindex="0" multiple></select>
                             </div>
                             <div>&nbsp;</div>
                             <div class="semester-select-container">
@@ -126,10 +117,6 @@
                                     <option value="ONHONORS">Honors Only</option>
                                 </select>
                                 &nbsp;
-                                <button id="autofill-profs-button" class="autofill-profs-button" type="text" alt="Autofill Professors" tabindex="0" onclick="autoPopulateProfs();">
-                                    &nbsp;<i class="fa fa-check-square-o" title="Autofill Professors"></i>&nbsp;&nbsp;Autofill Professors&nbsp;
-                                </button>
-                                &nbsp;
                                 <button id="regenerate-gpa-plot-colors-button" class="regenerate-gpa-plot-colors-button" type="text" alt="Generate New Plot Colors" tabindex="0" onclick="regenGPAPlotChartColors();">
                                     &nbsp;<i class="fa fa-refresh" title="Generate New Plot Colors"></i>&nbsp;&nbsp;New Plot Colors&nbsp;
                                 </button>
@@ -149,17 +136,15 @@
                 
                 <div class="course-stats-layout-container">
                     <div class="course-stats-container">
-                            <div class=course-stats-gpa-container>
-                                <canvas id="courseGpaChartCanvas" aria-label="Course GPA Range Chart" role="img"></canvas>
-                            </div>
-                            <div class='spacer'></div>
-                            <div class=course-stats-letter-container>
-                                <canvas id="courseLetterChartCanvas" aria-label="Course Letter Distribution Chart" role="img"></canvas>
-                            </div>
-                            <div class='spacer'></div>
-                            <div class=course-stats-overalldiff-container>
-                                <canvas id="courseOveralldiffChartCanvas" aria-label="Course Difficulty Chart" role="img"></canvas>
-                            </div>
+                        <div class=course-stats-gpa-container>
+                            <canvas id="courseGpaChartCanvas" aria-label="Course GPA Range Chart" role="img"></canvas>
+                        </div>
+                        <div class=course-stats-letter-container>
+                            <canvas id="courseLetterChartCanvas" aria-label="Course Letter Distribution Chart" role="img"></canvas>
+                        </div>
+                        <div class=course-stats-overalldiff-container>
+                            <canvas id="courseOveralldiffChartCanvas" aria-label="Course Difficulty Chart" role="img"></canvas>
+                        </div>
                     </div>
                 </div>
 
@@ -175,434 +160,29 @@
 
             <!--footer-->
             <div class="footer-container">
+                <div class="footer-spacer"></div>
                 <div class="footer-bar">
                     <div class="footer-left">
                         <div class="footer-subtext-left">
-                            <p><span class="link-underline-light"><a href="https://github.com/TAMU-GradeDistribution">Project Repo</a></span></p>
-                            <p>Code licensed under the <span class="link-underline-light"><a href="https://github.com/TAMU-GradeDistribution/TAMU-GradeDistribution-Website/blob/main/LICENSE.md">MIT license.</a></span></p>
+                            <p><span class="color-standard"><a href="https://github.com/TAMU-GradeDistribution">Project Repo</a></span></p>
+                            <p>Code licensed under the <span class="color-standard"><a href="https://github.com/TAMU-GradeDistribution/TAMU-GradeDistribution-Website/blob/main/LICENSE.md">MIT license</a></span></p>
                         </div>
                     </div>
 
-                    <div class="footer-logo">
-                        <a href="/">
-                            <img src="/images/img/tamugd-logo-transparent.svg?v=1.0" alt='TAMUGD Logo' width="40" height="40">
-                        </a>
+                    <div class="footer-logo-container">
+                        <div class="footer-logo" id="home_link2">
+                            <img id="favicon2" src="images/img/tamugd-logo.svg?v=1.0" alt='TAMUGD Logo'>
+                        </div>
                     </div>
 
                     <div class="footer-right">
                         <div class="footer-subtext-right">
-                            <p>
-                                <i class="fa fa-github fa-lg color-white" title="Github logo"></i>
-                                <span class="link-underline-light"><a href="https://github.com/adibarra">@adibarra</a></span>
-                            </p>
-                            <p>
-                                <i class="fa fa-github fa-lg color-white" title="Github logo"></i>
-                                <span class="link-underline-light"><a href="https://github.com/thestarch2">@thestarch2</a></span>
-                            </p>
+                            <p><i class="fa fa-github fa-lg" title="Github logo"></i><span class="color-standard"><a href="https://github.com/adibarra"> @adibarra</a></span></p>
+                            <p><i class="fa fa-github fa-lg" title="Github logo"></i><span class="color-standard"><a href="https://github.com/thestarch2"> @thestarch2</a></span></p>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-
-        <script>
-            var darkmodeEnabled = false
-            var rawdatagrid;
-            $(".raw-data-layout-container").hide();
-            $("#department-select").empty();
-            getDBDepartments().forEach(function(value, index, array) {
-                $("#department-select").append($("<option></option>").attr("value", value.toUpperCase()).text(value));
-            });
-
-            $("#department-select").chosen({width: "100%"});
-            $("#professor-select").chosen({width: "100%", max_selected_options: 0, disable_search_threshold: 10, hide_results_on_select:false});
-            $("#semester-select").chosen({width: "100%", max_selected_options: 3, disable_search: true});
-            $("#honors-select").chosen({width: "150px", disable_search: true});
-            $("#autopopulate-select").chosen({width: "150px", disable_search: true});
-
-            $('#department-select').trigger('chosen:activate');
-            $('#professor-select').on('chosen:maxselected', function(evt, params) {
-                $('#professor-select').trigger('chosen:close');
-                updateSelections(false);
-            });
-            $('#professor-select').chosen().change(function(evt, params) {
-                updateSelections(false);
-            });
-            $('#semester-select').chosen().change(function(evt, params) {
-                updateSelections();
-            });
-            $('#honors-select').chosen().change(function(evt, params) {
-                updateSelections();
-            });
-
-            $("#courseGpaChartCanvas").tipso({
-                position: 'bottom',
-                width: $("#courseGpaChartCanvas").width(),
-                titleBackground: 'rgba(102,102,102,0.66)',
-                background: 'rgba(102,102,102,0.66)',
-                titleContent: 'How to interpret:',
-                content: 'The yellow area indicates the range between the highest'
-                +' and lowest GPAs acheived during the selected years and semesters.'
-                +' The small green bar indicates the average GPA which was acheived.',
-            });
-            $("#courseLetterChartCanvas").tipso({
-                position: 'bottom',
-                width: $("#courseLetterChartCanvas").width(),
-                titleBackground: 'rgba(102,102,102,0.66)',
-                background: 'rgba(102,102,102,0.66)',
-                titleContent: 'How to interpret:',
-                content: 'There is a section with a corresponding color for each of the'
-                +' following grade letters: [A, B, C, D, F, Q]. This plot shows the percentage'
-                +' at which each grade letter was recieved relative to each other.',
-            });
-            $("#courseOveralldiffChartCanvas").tipso({
-                position: 'bottom',
-                width: $("#courseOveralldiffChartCanvas").width(),
-                titleBackground: 'rgba(102,102,102,0.66)',
-                background: 'rgba(102,102,102,0.66)',
-                tooltipHover: true,
-                titleContent: 'How to interpret:',
-                content: 'This plot takes a few of the statistics for the course and plugs them into the following'
-                +' <span class="link-underline-neutral">'
-                +'<a href="https://github.com/TAMU-GradeDistribution/TAMU-GradeDistribution-Website/blob/main/public/scripts/main.js#L449">'
-                +' formula</a></span> to determine a relative difficulty score for each course.',
-            });
-
-            var years = getDBYears();
-            var yearRange = $('#year-range').jRange({
-                from: years[0],
-                to: years[years.length-1],
-                step: 1,
-                scale: years,
-                format: '%s',
-                width: $(".inner-year-container").width(),
-                showLabels: false,
-                snap: true,
-                isRange: true,
-                onstatechange: () => {updateSelections(false);},
-            });
-
-            const skipped = (ctx, value) => ctx.p0.skip || ctx.p1.skip ? value : undefined;
-            var ctx = document.getElementById('gpaChartCanvas').getContext('2d');
-            var gpaPlot = new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: getGPAPlotChartLabels($('#year-range').val().split(','),$("#semester-select").chosen().val()),
-                    datasets: [
-                        {
-                            label: 'Professor 1',
-                            data: [1.2,1.8,undefined,3.1,3.2,3.0,3.3,3.6,2.5,2.9,undefined,undefined,3.0,2.6,3.2,3.6],
-                            fill: false,
-                            borderColor: '#666666',
-                            backgroundColor: '#66666680',
-                            tension: 0.1,
-                            borderWidth: 2,
-                            segment: {
-                                borderDash: ctx => skipped(ctx, [6, 6]),
-                            },
-                        },
-                        {
-                            label: 'Professor 2',
-                            data: [3.2,2.8,3.2,2.6,2.3,undefined,undefined,3.2,3.5,3.6,3.4,2.6,2.9,3.1,3.4,2.75],
-                            fill: false,
-                            borderColor: '#9944FF',
-                            backgroundColor: '#9944FF80',
-                            tension: 0.1,
-                            borderWidth: 2,
-                            segment: {
-                                borderDash: ctx => skipped(ctx, [6, 6]),
-                            },
-                        },
-                        {
-                            label: 'Professor 3',
-                            data: [2.2,3.8,2.6,3.2,2.6,3.6,2.7,2.1,2.2,1.6,1.45,2.1,2.2,1.45,1.6,2.1],
-                            fill: false,
-                            borderColor: '#CC77CC',
-                            backgroundColor: '#CC77CC80',
-                            tension: 0.1,
-                            borderWidth: 2,
-                            segment: {
-                                borderDash: ctx => skipped(ctx, [6, 6]),
-                            },
-                        },
-                        {
-                            label: 'Professor 4',
-                            data: [1.5,1.6,1.4,1.8,1.3,1.4,1.9,1.7,1.5,1.5,1.7,1.8,2.0,2.1,1.95,1.7],
-                            fill: false,
-                            borderColor: '#77CC77',
-                            backgroundColor: '#77CC7780',
-                            tension: 0.1,
-                            borderWidth: 2,
-                            segment: {
-                                borderDash: ctx => skipped(ctx, [6, 6]),
-                            },
-                        },
-                    ]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    spanGaps: true,
-                    plugins: {
-                        legend: {
-                            display: true,
-                            position: 'right',
-                            align: 'left',
-                            labels: {
-                                usePointStyle: true,
-                                boxWidth: 10,
-                            },
-                        },
-                    },
-                    interaction: {
-                        intersect: false,
-                    },
-                    xAxes: [{
-                        ticks: {
-                            autoSkip: true,
-                            maxRotation: 90,
-                            minRotation: 0
-                        }
-                    }],
-                }
-            });
-            var ctx = document.getElementById('courseGpaChartCanvas').getContext('2d');
-            var courseGpaPlot = new Chart(ctx, {
-                type: 'bar',
-                data: {
-                    labels: [''],
-                    datasets: [
-                        {
-                            label: '',
-                            data: [1.3],
-                            backgroundColor: 'rgba(102,102,102,0.66)',
-                            borderWidth: 1,
-                        },
-                        {
-                            label: 'GPA Low: 1.300',
-                            data: [1.53],
-                            backgroundColor: 'rgba(247,194,14,0.66)',
-                            borderWidth: 1,
-                        },
-                        {
-                            label: 'GPA Avg: 2.830',
-                            data: [0.04],
-                            backgroundColor: 'rgba(128,149,7,0.66)',
-                            borderWidth: 1,
-                        },
-                        {
-                            label: 'GPA High: 3.910',
-                            data: [1.08],
-                            backgroundColor: 'rgba(247,194,14,0.66)',
-                            borderWidth: 1,
-                        },
-                        {
-                            label: '',
-                            data: [0.05],
-                            backgroundColor: 'rgba(102,102,102,0.66)',
-                            borderWidth: 1,
-                        },
-                    ]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    indexAxis: 'y',
-                    scales: {
-                        x: {
-                            ticks: {
-                                suggestedMin: 0.0,
-                                suggestedMax: 4.0,
-                                min: 0.0,
-                                max: 4.0,
-                            },
-                            stacked: true,
-                        },
-                        y: {
-                            stacked: true,
-                        },
-                    },
-                    plugins: {
-                        title: {
-                            display: true,
-                            text: 'Course GPA Range'
-                        },
-                        legend: {
-                            display:false
-                        },
-                        tooltip: {
-                            enabled: false,
-                            callbacks: {
-                                label: function(ctx) {
-                                    return ctx.dataset.label;
-                                },
-                            },
-                        },
-                    },
-                    interaction: {
-                        intersect: false,
-                        mode: 'y',
-                    },
-                },
-            });
-            var ctx = document.getElementById('courseLetterChartCanvas').getContext('2d');
-            var courseLetterPlot = new Chart(ctx, {
-                plugins: [ChartDataLabels],
-                type: 'bar',
-                data: {
-                    labels: [''],
-                    datasets: [
-                        {
-                            label: 'A',
-                            data: [32],
-                            backgroundColor: 'rgba(128,149,7,0.66)',
-                            borderWidth: 1,
-                        },
-                        {
-                            label: 'B',
-                            data: [39],
-                            backgroundColor: 'rgba(175,166,5,0.66)',
-                            borderWidth: 1,
-                        },
-                        {
-                            label: 'C',
-                            data: [14],
-                            backgroundColor: 'rgba(247,194,14,0.66)',
-                            borderWidth: 1,
-                        },
-                        {
-                            label: 'D',
-                            data: [7],
-                            backgroundColor: 'rgba(250,45,8,0.66)',
-                            borderWidth: 1,
-                        },
-                        {
-                            label: 'F',
-                            data: [5],
-                            backgroundColor: 'rgba(211,15,2,0.66)',
-                            borderWidth: 1,
-                        },
-                        {
-                            label: 'Q',
-                            data: [3],
-                            backgroundColor: 'rgba(102,102,102,0.66)',
-                            borderWidth: 1,
-                        },
-                    ]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    indexAxis: 'y',
-                    scales: {
-                        x: {
-                            stacked: true,
-                            ticks: {
-                                min: 0,
-                                max: 100,
-                                callback: function(value) {
-                                    return value + "%"
-                                }
-                            },
-                        },
-                        y: {
-                            stacked: true,
-                        },
-                    },
-                    plugins: {
-                        title: {
-                            display: true,
-                            text: 'Course Letter Grades'
-                        },
-                        legend: {
-                            display:false
-                        },
-                        tooltip: {
-                            callbacks: {
-                                label: function(ctx) {
-                                    return ctx.dataset.label+': '+''+Number(ctx.dataset.data).toFixed(1)+'%';
-                                },
-                            },
-                        },
-                        datalabels: {
-                            color: '#000000B0',
-                            formatter: function(value, ctx) {
-                                if (Number(ctx.dataset.data) > 1.5) return ctx.dataset.label;
-                                return '';
-                            },
-                        },
-                    },
-                    interaction: {
-                        intersect: false,
-                    },
-                },
-            });
-            var ctx = document.getElementById('courseOveralldiffChartCanvas').getContext('2d');
-            var courseDiffPlot = new Chart(ctx, {
-                plugins: [ChartDataLabels],
-                type: 'bar',
-                data: {
-                    labels: [''],
-                    datasets: [
-                        {
-                            label: 'Difficulty',
-                            data: [6],
-                            backgroundColor: 'rgba(247,194,14,0.66)',
-                            borderWidth: 1,
-                        },
-                        {
-                            label: '',
-                            data: [4],
-                            backgroundColor: 'rgba(102,102,102,0.66)',
-                            borderWidth: 1,
-                        },
-                    ]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    indexAxis: 'y',
-                    scales: {
-                        x: {
-                            stacked: true,
-                            ticks: {
-                                min: 1,
-                                max: 10,
-                            },
-                        },
-                        y: {
-                            stacked: true,
-                        },
-                    },
-                    plugins: {
-                        title: {
-                            display: true,
-                            text: 'Relative Course Difficulty'
-                        },
-                        legend: {
-                            display:false
-                        },
-                        tooltip: {
-                            enabled: false,
-                        },
-                        datalabels: {
-                            color: '#000000B0',
-                            formatter: function(value, ctx) {
-                                if (ctx.dataset.label == 'Difficulty')
-                                    return value+'/10';
-                                return '';
-                            },
-                        },
-                    },
-                    interaction: {
-                        intersect: false,
-                    },
-                },
-            });
-            if ((window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) || document.cookie.includes('darkmode=true')) {
-                toggleDarkMode();
-            }
-        </script>
-
     </body>
 </html>

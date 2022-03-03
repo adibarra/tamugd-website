@@ -1,25 +1,37 @@
-// toggle-darkmode js to toggle darkmode
-function toggleDarkMode() {
-    toggleDarkmodeHTML = $("#darkmode-toggle").html().trim();
-    if (toggleDarkmodeHTML.includes('<i class="fa fa-sun-o')) {
-        $("#darkmode-toggle").html('<i class="fa fa-moon-o" aria-hidden="true"></i>&nbsp;<i class="fa fa-toggle-on" aria-hidden="true"></i>');
-        document.cookie = "darkmode=true; SameSite=Strict;";
-        darkmodeEnabled = true        
-    }
-    else {
-        $("#darkmode-toggle").html('<i class="fa fa-sun-o" aria-hidden="true"></i>&nbsp;<i class="fa fa-toggle-off" aria-hidden="true"></i>');
-        document.cookie = "darkmode=false; SameSite=Strict;";
-        darkmodeEnabled = false
-    }
+document.addEventListener('DOMContentLoaded', () => {
+    updateThemeMode();
+    openOnClick('home_link1', '/home');
+    openOnClick('home_link2', '/home');
+    document.getElementById('thememode_toggle').addEventListener('click', () => {
+        toggleThemeMode();
+    });
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-HS51DZ5HEM');
+});
+
+function openOnClick(elementID, link) {
+    document.getElementById(elementID).addEventListener('click', () => { window.location=link;});
+}
+
+function openTabOnClick(elementID, link) {
+    document.getElementById(elementID).addEventListener('click', () => { window.open(link); });
+}
+
+// toggle-theme js to toggle between light and dark theme
+function toggleThemeMode() {
+    document.cookie = 'lightmode='+!document.cookie.includes('lightmode=true')+'; SameSite=Strict;';
     updateThemeMode();
 }
 
-// set page to darkmode if darkmode is enabled
 function updateThemeMode() {
-    if (darkmodeEnabled) {
-        $('*').addClass("dark-theme");
+    var light_theme = document.cookie.includes('lightmode=true')
+    if (light_theme && !document.body.classList.contains('light-theme')) {
+        document.getElementById('thememode_toggle').innerHTML = '<i class="fa fa-sun-o" aria-hidden="true"></i>&nbsp;<i class="fa fa-toggle-on" aria-hidden="true"></i>';
     }
-    else {
-        $('*').removeClass("dark-theme");
+    else if(document.body.classList.contains('light-theme')) {
+        document.getElementById('thememode_toggle').innerHTML = '<i class="fa fa-moon-o" aria-hidden="true"></i>&nbsp;<i class="fa fa-toggle-off" aria-hidden="true"></i>';
     }
+    document.body.classList.toggle('light-theme', light_theme);
 }
