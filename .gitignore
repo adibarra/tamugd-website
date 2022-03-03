@@ -10,3 +10,4 @@ mysql_config.js
 
 # node dependencies
 node_modules/
+package-lock.json
