@@ -1,3 +1,3 @@
 module.exports.serverConfig = {
-    port       : '5000',
+    port : '5000',
 };
