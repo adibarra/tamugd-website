@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: http://gd.adibarra.com/sitemap.xml
