@@ -10,7 +10,6 @@ MIT License, https://github.com/jjj/chosen/blob/master/LICENSE.md
     position: relative;
     display: inline-block;
     vertical-align: middle;
-    font-size: 14px;
     -webkit-user-select: none;
     -moz-user-select: none;
     -ms-user-select: none;
@@ -78,7 +77,7 @@ MIT License, https://github.com/jjj/chosen/blob/master/LICENSE.md
     color: #444;
     text-decoration: none;
     white-space: nowrap;
-    line-height: 24px;
+    line-height: 1.75em;
 }
 
 .chosen-container-single .chosen-single-with-deselect.chosen-default span,

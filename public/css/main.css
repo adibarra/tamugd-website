@@ -1,8 +1,4 @@
 @media screen and (min-width: 0px) {
-    .slider-container .scale ins {
-        font-size: 7px;
-        left: 0;
-    }
     .plot-layout-container {
         width: 100%;
         height: 800px;
@@ -18,22 +14,24 @@
         height: 100%;
         display: flex;
         padding: 0.25em;
+        margin: 0 0 0.5em 0;
         justify-content: center;
         background-color: var(--foreground1-color);
-        border: 1px solid var(--foreground3-color);
+        border: 1px solid var(--border-color);
         box-shadow: 0 22px 35px -16px rgba(0,0,0,0.1);
         border-radius: 5px;
     }
     .settings-container {
         width: 100%;
         height: 100%;
+        display: flex;
         gap: 0.25em 0.25em;
         padding: 0.25em;
-        display: flex;
+        margin: 0 0 0.5em 0;
         flex-direction: column;
         justify-content: center;
         background-color: var(--foreground1-color);
-        border: 1px solid var(--foreground4-color);
+        border: 1px solid var(--border-color);
         box-shadow: 0 22px 35px -16px rgba(0,0,0,0.1);
         border-radius: 5px;
     }
@@ -51,7 +49,7 @@
         padding: 0.25em;
         flex: 1;
         flex-direction: column;
-        border: 1px solid var(--foreground3-color);
+        border: 1px solid var(--border-color);
         border-radius: 5px;
     }
     .year-container {
@@ -61,7 +59,7 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        border: 1px solid var(--foreground3-color);
+        border: 1px solid var(--border-color);
         border-radius: 5px;
     }
     .course-stats-layout-container {
@@ -78,98 +76,91 @@
         flex-direction: column;
         justify-content: space-between;
         background-color: var(--foreground1-color);
-        border: 1px solid var(--foreground4-color);
+        border: 1px solid var(--border-color);
         box-shadow: 0 22px 35px -16px rgba(0,0,0,0.1);
         border-radius: 5px;
     }
-    .course-stats-gpa-container {
+    .course-range-chart-container {
         height: 100px;
         text-align: center;
-        border: 1px solid var(--foreground3-color);
+        border: 1px solid var(--border-color);
         border-radius: 5px;
     }
     .course-stats-letter-container {
         height: 100px;
         text-align: center;
-        border: 1px solid var(--foreground3-color);
+        border: 1px solid var(--border-color);
         border-radius: 5px;
     }
-    .course-stats-overalldiff-container {
+    .course-stats-difficulty-container {
         height: 100px;
         text-align: center;
-        border: 1px solid var(--foreground3-color);
+        border: 1px solid var(--border-color);
         border-radius: 5px;
     }
     th.gridjs-th,td.gridjs-td {
         background-color: var(--foreground1-color);
-        border-color: var(--foreground3-color);
+        border-color: var(--border-color);
         text-align: center;
         font-size: 9px;
         padding: 3px;
     }
-    .professor-select-container {width: 50%;}
-    .semester-select-container {width: 50%;}
+    th.gridjs-th-sort .gridjs-th-content { width: 100%; }
+    button.gridjs-sort { width: 5px; height: 5px; }
+    .slider-container .scale ins { font-size: 7px; left: 0; }
+    .professor-select-container { width: 50%; }
+    .semester-select-container { width: 50%; }
+    .chosen-single, .chosen-choices, .chosen-drop { font-size: 14px; }
+    #new_chart_colors_button, #toggle_raw_data_button { font-size: 14px; height: 31.5px; }
 }
 
 @media screen and (min-width: 400px) {
-    .slider-container .scale ins {font-size: 8px; left: 0;}
-    .professor-select-container {width: 55%;}
-    .semester-select-container {width: 45%;}
+    th.gridjs-th { font-size: 8px; padding: 2px; }
+    td.gridjs-td { font-size: 8px; padding: 2px; }
+    th.gridjs-th-sort .gridjs-th-content { width: calc(100% - 5px); }
+    button.gridjs-sort { width: 5px; height: 5px; }
+    .slider-container .scale ins { font-size: 10px; left: 0; }
+    .professor-select-container { width: 55%; }
+    .semester-select-container { width: 45%; }
 }
 
+@media screen and (min-width: 650px) {
+    th.gridjs-th { font-size: 10px; padding: 2px; }
+    td.gridjs-td { font-size: 10px; padding: 2px; }
+    th.gridjs-th-sort .gridjs-th-content { width: calc(100% - 8px); }
+    button.gridjs-sort { width: 8px; height: 8px; }
+}
 
 @media screen and (min-width: 850px) {
-    th.gridjs-th {font-size: 18px; padding: 3px;}
-    td.gridjs-td {font-size: 15px; padding: 3px;}
-    .slider-container .scale ins {font-size: 12px; left: -2px;}
-    .professor-select-container {width: 60%;}
-    .semester-select-container {width: 40%;}
-    .course-stats-layout-container {height: 125px;}
-    .professor-semester-container { width: 100%; }
-    .options-container { width: 100%; }
-    .year-container { width: 100%; }
+    th.gridjs-th { font-size: 18px; padding: 3px; }
+    td.gridjs-td { font-size: 15px; padding: 3px; }
+    th.gridjs-th-sort .gridjs-th-content { width: calc(100% - 10px); }
+    button.gridjs-sort { width: 10px; height: 10px; }
+    .slider-container .scale ins { font-size: 12px; left: -2px; }
+    .professor-select-container { width: 60%; }
+    .semester-select-container { width: 40%; }
 }
 
 @media screen and (min-width: 1000px) {
-    th.gridjs-th {font-size: 18px; padding: 5px 3px;}
-    td.gridjs-td {font-size: 15px; padding: 5px 3px;}
-    .professor-select-container {width: 60%;}
-    .semester-select-container {width: 40%;}
-    .settings-container {width: 40%; height: 100%;}
-    .course-stats-container {flex-direction: row;}
-    .course-stats-gpa-container {width:100%;}
-    .course-stats-letter-container {width:100%;}
-    .course-stats-overalldiff-container {width:100%;}
-    .plot-container {width: 60%;}
-    .plot-layout-container {
-        width: 100%;
-        height: 400px;
-        flex-direction: row;
-    }
+    th.gridjs-th { font-size: 18px; padding: 5px 3px; }
+    td.gridjs-td { font-size: 15px; padding: 5px 3px; }
+    th.gridjs-th-sort .gridjs-th-content { width: calc(100% - 15px); }
+    button.gridjs-sort { width: 15px; height: 15px; }
+    .settings-container { width: 40%; height: 100%; }
+    .course-stats-container { flex-direction: row; }
+    .course-range-chart-container { width: 100%; }
+    .course-stats-letter-container { width: 100%; }
+    .course-stats-difficulty-container { width: 100%; }
+    .plot-container { width: 60%; }
+    .plot-layout-container { height: 400px; flex-direction: row; }
 }
 
-@media screen and (min-width: 1250px) {
-    th.gridjs-th {font-size: 18px; padding: 7px 3px;}
-    td.gridjs-td {font-size: 15px; padding: 7px 3px;}
-    .slider-container .scale ins {font-size: 12px; left: -2px;}
-    .professor-select-container {width: 60%;}
-    .semester-select-container {width: 40%;}
-}
-
-@media screen and (min-width: 1500px) {
-    th.gridjs-th {font-size: 18px; padding: 9px 3px;}
-    td.gridjs-td {font-size: 15px; padding: 9px 3px;}
-    .slider-container .scale ins {font-size: 12px; left: -2px;}
-    .professor-select-container {width: 60%;}
-    .semester-select-container {width: 40%;}
-}
 
 .search-layout-container {
     width: 100%;
     height: 75px;
     padding: 0.5em 0.5em 0.25em 0.5em;
     display: flex;
-    justify-content: center;
 }
 
 .raw-data-layout-container {
@@ -182,59 +173,80 @@
 .search-container {
     width: 100%;
     display: flex;
+    align-items: center;
+    justify-content: center;
     padding: 0.25em;
     background-color: var(--foreground1-color);
-    border: 1px solid var(--foreground4-color);
+    border: 1px solid var(--border-color);
     box-shadow: 0 22px 35px -16px rgba(0,0,0,0.1);
     border-radius: 5px;
 }
 
 .inner-search-container {
     width: 100%;
+    height: 100%;
     display: flex;
+    padding: 0.25em;
+    flex-direction: row;
     align-items: center;
     justify-content: center;
-    border: 1px solid var(--foreground3-color);
+    border: 1px solid var(--border-color);
     border-radius: 5px;
 }
 
-.chosen-results {
-    scrollbar-width: thin;
+#department_select, #department_select_chosen {
+    min-width: 75px;
+    max-width: 90px;
+    margin: 0 1em 0 0.5em;
 }
 
-.inner-search-container #department_select_chosen {
-    min-width: 85px;
+#course_select {
+    margin: 0 1em 0 0.5em;
 }
 
-.inner-search-container #course_select_chosen {
-    min-width: 50px;
-    max-width: 100px;
-}
-
-.inner-search-container #course-field {
+#course_select, #course_field {
     width: 100%;
+    min-width: 30px;
+    max-width: 100px;
     text-transform: uppercase;
+    cursor: text;
 }
 
-.search-button {
-    width: 60px;
+.search-button-container {
+    width: 65px;
+    height: 31.5px;
+    margin: 0 0 0 1em;
+}
+
+.search-button-container button {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--white-color);
     background-color: #2666a6;
 }
 
-.search-button:hover {
+.search-button-container button:hover {
     background-color: #3f7fbf;
 }
 
-.inner-options-header-container,.inner-options-input-container {
+.inner-options-header-container, .inner-options-input-container {
     width: 100%;
     padding-left: 1%;
     margin: 0.1em;
 }
 
+#honors_select_chosen, #new_chart_colors_button, #toggle_raw_data_button {
+    width: 155px!important;
+    margin: 0.25em;
+}
+
 .inner-plot-container {
     width: 100%;
     text-align: center;
-    border: 1px solid var(--foreground3-color);
+    border: 1px solid var(--border-color);
     border-radius: 5px;
 }
 
@@ -264,7 +276,7 @@
     align-items: center;
     vertical-align: middle;
     background-color: var(--foreground1-color);
-    border: 1px solid var(--foreground4-color);
+    border: 1px solid var(--border-color);
     box-shadow: 0 22px 35px -16px rgba(0,0,0,0.1);
     border-radius: 5px;
 }
@@ -278,17 +290,36 @@
     position: relative;
 }
 
-#raw-data-table-container {
+.raw-data-table-container {
     width: 100%;
 }
 
-#gpaChartCanvas, #courseGpaChartCanvas, #courseLetterChartCanvas, #courseOveralldiffChartCanvas {
+#gpa_chart_canvas, #course_range_chart_canvas, #course_letter_chart_canvas, #course_difficulty_chart_canvas {
     width: 100%;
     height: 100%;
 }
 
+.back-to-top {
+    position: absolute;
+    width: 1.5em;
+    height: 1.5em;
+    right: 0;
+    bottom: 0;
+    margin-right: 0.5em;
+    margin-bottom: 0.5em;
+    float: right;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: var(--inverted-color);
+    border-color: var(--inverted-color);
+    background-color: var(--standard-color);
+    border-radius: 50px;
+    cursor: pointer;
+}
+
 .tipso_style {
-	border-bottom: none;
+    border-bottom: none;
 }
 
 .theme-default .back-bar {
@@ -301,7 +332,7 @@
 
 .theme-default .back-bar .pointer {
     border-color: var(--background-color);
-    background-color: var(--foreground4-color);
+    background-color: var(--border-color);
 }
 
 .theme-default .scale span, .theme-default .scale ins {
@@ -309,23 +340,28 @@
     border-color: var(--standard-color);
 }
 
+.chosen-results {
+    scrollbar-width: thin;
+}
+
 .chosen-container .chosen-drop {
-    border-color: var(--foreground3-color);
+    border-color: var(--border-color);
     background-color: var(--foreground2-color);
 }
 
 .chosen-container-single .chosen-drop .result-selected {
-    background-color: var(--foreground3-color);
+    background-color: var(--border-color);
 }
 
 .chosen-container-single .chosen-single {
-    border-color: var(--foreground3-color);
+    border-color: var(--border-color);
     background-color: var(--foreground2-color);
     color: var(--standard-color);
+    cursor: pointer;
 }
 
 .chosen-container-single .chosen-single:hover {
-    background-color: var(--foreground3-color);
+    background-color: var(--border-color);
 }
 
 .chosen-container-single .chosen-single div b {
@@ -349,16 +385,16 @@ body.light-theme .chosen-container-single .chosen-single div b {
 }
 
 .chosen-container-multi .chosen-choices {
-    border-color: var(--foreground3-color);
+    border-color: var(--border-color);
     background-color: var(--foreground2-color);
 }
 
 .chosen-container-multi .chosen-choices:hover {
-    background-color: var(--foreground3-color);
+    background-color: var(--border-color);
 }
 
 .chosen-container-multi .chosen-choices li.search-choice {
-    border-color: var(--foreground3-color);
+    border-color: var(--border-color);
     background-color: var(--foreground1-color);
     color: var(--standard-color);
 }
@@ -370,7 +406,7 @@ body.light-theme .chosen-container-single .chosen-single div b {
     justify-content: center;
     align-items: center;
     box-shadow: none;
-    border: 1px solid var(--foreground3-color);
+    border: 1px solid var(--border-color);
     border-radius: 5px;
 }
 
@@ -412,17 +448,17 @@ body.light-theme button.gridjs-sort-desc {
 }
 
 td.gridjs-td {
-    border-color: var(--foreground3-color);
+    border-color: var(--border-color);
 }
 
 th.gridjs-th {
     background-color: var(--foreground2-color);
-    border-color: var(--foreground3-color);
+    border-color: var(--border-color);
     color: var(--standard-color);
 }
 
 th.gridjs-th-sort:focus,th.gridjs-th-sort:hover {
-    background-color: var(--foreground3-color);
+    background-color: var(--border-color);
 }
 
 .gridjs-container {
