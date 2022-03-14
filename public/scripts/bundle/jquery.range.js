@@ -10,7 +10,6 @@
  * Licensed under the MIT LICENSE.
  *
  * @author Nitin Hayaran
- * @author vpekarek (js modified by)
  * @version 0.1-RELEASE
  *
  * Dependencies
@@ -359,13 +358,37 @@
              this.isReadonly();
          },
          updateRange: function(range, value) {
-             var values = range.toString().split(',');
+             var values = range.toString().split(',');			
+             this.options.from = values[0];
+             this.options.to = values[1];
              this.interval = parseInt(values[1]) - parseInt(values[0]);
              if(value){
                  this.setValue(value);
              }else{
                  this.setValue(this.getValue());
              }
+             if (this.options.showScale) {
+                 var len = this.options.scale ? this.options.scale.length : 2;
+                 var step = this.interval / (len - 1)
+                 var scale = [];
+                 for (var i = 0; i < len; i += 1) {
+                     var value = i * step + parseInt(this.options.from);
+                     scale.push(value);
+                 }
+                 this.options.scale = scale;
+                 this.renderScale();
+             }
+         },
+         updateRender: function(data) {
+            return 0 !== this.inputNode.width() || this.options.width ? (this.options.width = this.options.width || this.inputNode.width(), this.domNode.width(this.options.width), this.inputNode.hide(), this.isSingle() && (this.lowPointer.hide(), this.lowLabel.hide()), this.options.showLabels || this.labels.hide(), this.attachEvents(), this.options.showScale && this.updateScale(data), void this.setValue(this.options.value)) : void console.log("jRange : no width found, returning")
+         },
+         updateScale: function(scale, from, to) {
+             for(var t = scale || [from, to], i = Math.round(100 / (t.length - 1) * 10) / 10, s = "", o = 0; o < t.length; o++) s += '<span style="left: ' + o * i + '%">' + ("|" != t[o] ? "<ins>" + t[o] + "</ins>" : "") + "</span>";
+                 this.scale.html(s), $("ins", this.scale).each(function() {
+                     $(this).css({
+                         marginLeft: -$(this).outerWidth() / 2
+                     })
+                 })
          }
      };
  

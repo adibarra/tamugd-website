@@ -1,652 +1,332 @@
-var rawdatagrid;
-var yearRange;
-var gpaPlot;
-var courseGpaPlot;
-var courseLetterPlot;
-var courseDiffPlot;
+var allDepartments = [];
+var allYears = [];
+var responseCache = [];
+var courseDataAll = [];
+var courseData = [];
+var courseProfs = [];
+var courseDataGrid;
+var courseGPAChart;
+var courseGPAChartPlaceholderDataset;
+var courseRangeChart;
+var courseLetterChart;
+var courseDiffChart;
 const skipped = (ctx, value) => ctx.p0.skip || ctx.p1.skip ? value : undefined;
 
 document.addEventListener('DOMContentLoaded', () => {
-    updateThemeMode();
-    $(".raw-data-layout-container").hide();
-    $("#department-select").empty();
-    getDBDepartments().forEach(function(value, index, array) {
-        $("#department-select").append($("<option></option>").attr("value", value.toUpperCase()).text(value));
-    });
+    $("#raw_data_layout_container").hide();
 
-    $("#department-select").chosen({width: "100%"});
-    $("#professor-select").chosen({width: "100%", max_selected_options: 0, disable_search_threshold: 10, hide_results_on_select:false});
-    $("#semester-select").chosen({width: "100%", max_selected_options: 3, disable_search: true});
-    $("#honors-select").chosen({width: "150px", disable_search: true});
-    $("#autopopulate-select").chosen({width: "150px", disable_search: true});
+    $("#department_select").chosen({ width: "100%" });
+    $("#professor_select").chosen({ width: "100%", max_selected_options: 0, disable_search_threshold: 10, hide_results_on_select:false });
+    $("#semester_select").chosen({ width: "100%", max_selected_options: 3, disable_search: true });
+    $("#honors_select").chosen({ width: "150px", disable_search: true });
 
-    $('#department-select').trigger('chosen:activate');
-    $('#professor-select').on('chosen:maxselected', function(evt, params) { $('#professor-select').trigger('chosen:close'); updateSelections(false); });
-    $('#professor-select').chosen().change(function(evt, params) { updateSelections(false); });
-    $('#semester-select').chosen().change(function(evt, params) { updateSelections(); });
-    $('#honors-select').chosen().change(function(evt, params) { updateSelections(); });
+    $('#professor_select').chosen().change(function(evt, params) { updateSelection(); });
+    $('#semester_select').chosen().change(function(evt, params) { updateSelection(); });
+    $('#honors_select').chosen().change(function(evt, params) { updateSelection(); });
 
-    $("#courseGpaChartCanvas").tipso({
-        position: 'bottom',
-        width: $("#courseGpaChartCanvas").width(),
-        titleBackground: 'rgba(102,102,102,0.66)',
-        background: 'rgba(102,102,102,0.66)',
-        titleContent: 'How to interpret:',
+    $("#course_range_chart_canvas").tipso({
+        position: 'bottom', width: $("#course_range_chart_canvas").width(),
+        titleBackground: 'rgba(102,102,102,.66)', background: 'rgba(102,102,102,.66)', titleContent: 'How to interpret:',
         content: 'The yellow area indicates the range between the highest'
         +' and lowest GPAs acheived during the selected years and semesters.'
         +' The small green bar indicates the average GPA which was acheived.',
     });
-    $("#courseLetterChartCanvas").tipso({
-        position: 'bottom',
-        width: $("#courseLetterChartCanvas").width(),
-        titleBackground: 'rgba(102,102,102,0.66)',
-        background: 'rgba(102,102,102,0.66)',
-        titleContent: 'How to interpret:',
+    $("#course_letter_chart_canvas").tipso({
+        position: 'bottom', width: $("#course_letter_chart_canvas").width(),
+        titleBackground: 'rgba(102,102,102,.66)', background: 'rgba(102,102,102,.66)', titleContent: 'How to interpret:',
         content: 'There is a section with a corresponding color for each of the'
-        +' following grade letters: [A, B, C, D, F, Q]. This plot shows the percentage'
+        +' following grade letters: [A, B, C, D, F, Q]. This chart shows the percentage'
         +' at which each grade letter was recieved relative to each other.',
     });
-    $("#courseOveralldiffChartCanvas").tipso({
-        position: 'bottom',
-        width: $("#courseOveralldiffChartCanvas").width(),
-        titleBackground: 'rgba(102,102,102,0.66)',
-        background: 'rgba(102,102,102,0.66)',
-        tooltipHover: true,
-        titleContent: 'How to interpret:',
-        content: 'This plot takes a few of the statistics for the course and plugs them into the following'
-        +' <span class="color-white">'
+    $("#course_difficulty_chart_canvas").tipso({
+        position: 'bottom', width: $("#course_difficulty_chart_canvas").width(), tooltipHover: true,
+        titleBackground: 'rgba(102,102,102,.66)', background: 'rgba(102,102,102,.66)', titleContent: 'How to interpret:',
+        content: 'This chart takes a few of the statistics for the course and plugs them into the following'
+        +' <span class="color-black">'
         +'<a href="https://github.com/TAMU-GradeDistribution/TAMU-GradeDistribution-Website/blob/main/public/scripts/main.js#L875">'
         +' formula</a></span> to determine a relative difficulty score for each course.',
     });
 
-    var years = getDBYears();
-    yearRange = $('#year-range').jRange({
-        from: years[0],
-        to: years[years.length-1],
-        step: 1,
-        scale: years,
-        format: '%s',
+    $('#year_range').jRange({
+        from: 0, to: 9999999,
+        step: 1, scale: 1, format: '%s',
         width: $(".inner-year-container").width(),
-        showLabels: false,
-        snap: true,
-        isRange: true,
-        onstatechange: () => {updateSelections(false);},
+        showLabels: false, snap: true, isRange: true,
+        onstatechange: () => { updateSelection(); }
     });
+    getSupportedData();
 
-    
-    var ctx = document.getElementById('gpaChartCanvas').getContext('2d');
-    gpaPlot = new Chart(ctx, {
+    courseGPAChartPlaceholderDataset = [
+        { label: 'Professor 1', data: [1.2,1.8,undefined,3.1,3.2,3.0,3.3,3.6,2.5,2.9,undefined,undefined,3.0,2.6,3.2,3.6], fill: false, borderColor: '#666666', backgroundColor: '#66666680', tension: 0.1, borderWidth: 2, segment: { borderDash: ctx => skipped(ctx, [6, 6]) } },
+        { label: 'Professor 2', data: [3.2,2.8,3.2,2.6,2.3,undefined,undefined,3.2,3.5,3.6,3.4,2.6,2.9,3.1,3.4,2.75], fill: false, borderColor: '#9944FF', backgroundColor: '#9944FF80', tension: 0.1, borderWidth: 2, segment: { borderDash: ctx => skipped(ctx, [6, 6]) } },
+        { label: 'Professor 3', data: [2.2,3.8,2.6,3.2,2.6,3.6,2.7,2.1,2.2,1.6,1.45,2.1,2.2,1.45,1.6,2.1], fill: false, borderColor: '#CC77CC', backgroundColor: '#CC77CC80', tension: 0.1, borderWidth: 2, segment: { borderDash: ctx => skipped(ctx, [6, 6]) } },
+        { label: 'Professor 4', data: [1.5,1.6,1.4,1.8,1.3,1.4,1.9,1.7,1.5,1.5,1.7,1.8,2.0,2.1,1.95,1.7], fill: false, borderColor: '#77CC77', backgroundColor: '#77CC7780', tension: 0.1, borderWidth: 2, segment: { borderDash: ctx => skipped(ctx, [6, 6]) } }
+    ];
+    courseGPAChart = new Chart(ctx = document.getElementById('gpa_chart_canvas').getContext('2d'), {
         type: 'line',
         data: {
-            labels: getGPAPlotChartLabels($('#year-range').val().split(','),$("#semester-select").chosen().val()),
-            datasets: [
-                {
-                    label: 'Professor 1',
-                    data: [1.2,1.8,undefined,3.1,3.2,3.0,3.3,3.6,2.5,2.9,undefined,undefined,3.0,2.6,3.2,3.6],
-                    fill: false,
-                    borderColor: '#666666',
-                    backgroundColor: '#66666680',
-                    tension: 0.1,
-                    borderWidth: 2,
-                    segment: {
-                        borderDash: ctx => skipped(ctx, [6, 6]),
-                    },
-                },
-                {
-                    label: 'Professor 2',
-                    data: [3.2,2.8,3.2,2.6,2.3,undefined,undefined,3.2,3.5,3.6,3.4,2.6,2.9,3.1,3.4,2.75],
-                    fill: false,
-                    borderColor: '#9944FF',
-                    backgroundColor: '#9944FF80',
-                    tension: 0.1,
-                    borderWidth: 2,
-                    segment: {
-                        borderDash: ctx => skipped(ctx, [6, 6]),
-                    },
-                },
-                {
-                    label: 'Professor 3',
-                    data: [2.2,3.8,2.6,3.2,2.6,3.6,2.7,2.1,2.2,1.6,1.45,2.1,2.2,1.45,1.6,2.1],
-                    fill: false,
-                    borderColor: '#CC77CC',
-                    backgroundColor: '#CC77CC80',
-                    tension: 0.1,
-                    borderWidth: 2,
-                    segment: {
-                        borderDash: ctx => skipped(ctx, [6, 6]),
-                    },
-                },
-                {
-                    label: 'Professor 4',
-                    data: [1.5,1.6,1.4,1.8,1.3,1.4,1.9,1.7,1.5,1.5,1.7,1.8,2.0,2.1,1.95,1.7],
-                    fill: false,
-                    borderColor: '#77CC77',
-                    backgroundColor: '#77CC7780',
-                    tension: 0.1,
-                    borderWidth: 2,
-                    segment: {
-                        borderDash: ctx => skipped(ctx, [6, 6]),
-                    },
-                },
-            ]
+            labels: getGPAChartLabels([2014,2021], ['SPRING','FALL']),
+            datasets: courseGPAChartPlaceholderDataset
         },
         options: {
             responsive: true,
             maintainAspectRatio: false,
             spanGaps: true,
             plugins: {
-                legend: {
-                    display: true,
-                    position: 'right',
-                    align: 'left',
-                    labels: {
-                        usePointStyle: true,
-                        boxWidth: 10,
-                    },
-                },
+                legend: { display: true, position: 'right', align: 'left', labels: { usePointStyle: true, boxWidth: 10 } },
+                tooltip: { callbacks: { label: function(ctx) { return ctx.dataset.label+': '+Number(ctx.parsed.y).toFixed(3); } } },
+                
             },
-            interaction: {
-                intersect: false,
-            },
-            xAxes: [{
-                ticks: {
-                    autoSkip: true,
-                    maxRotation: 90,
-                    minRotation: 0
-                }
-            }],
+            interaction: { intersect: false },
+            xAxes: [{ ticks: { autoSkip: true, maxRotation: 90, minRotation: 0 } }]
         }
     });
-    var ctx = document.getElementById('courseGpaChartCanvas').getContext('2d');
-    courseGpaPlot = new Chart(ctx, {
+
+    courseRangeChart = new Chart(ctx = document.getElementById('course_range_chart_canvas').getContext('2d'), {
         type: 'bar',
         data: {
             labels: [''],
             datasets: [
-                {
-                    label: '',
-                    data: [1.3],
-                    backgroundColor: 'rgba(102,102,102,0.66)',
-                    borderWidth: 1,
-                },
-                {
-                    label: 'GPA Low: 1.300',
-                    data: [1.53],
-                    backgroundColor: 'rgba(247,194,14,0.66)',
-                    borderWidth: 1,
-                },
-                {
-                    label: 'GPA Avg: 2.830',
-                    data: [0.04],
-                    backgroundColor: 'rgba(128,149,7,0.66)',
-                    borderWidth: 1,
-                },
-                {
-                    label: 'GPA High: 3.910',
-                    data: [1.08],
-                    backgroundColor: 'rgba(247,194,14,0.66)',
-                    borderWidth: 1,
-                },
-                {
-                    label: '',
-                    data: [0.05],
-                    backgroundColor: 'rgba(102,102,102,0.66)',
-                    borderWidth: 1,
-                },
+                { label: '', data: [1.3], backgroundColor: 'rgba(102,102,102,.66)', borderWidth: 1 },
+                { label: 'GPA Low: 1.300', data: [1.53], backgroundColor: 'rgba(247,194,14,.66)', borderWidth: 1 },
+                { label: 'GPA Avg: 2.830', data: [0.04], backgroundColor: 'rgba(128,149,7,.66)', borderWidth: 1 },
+                { label: 'GPA High: 3.910', data: [1.08], backgroundColor: 'rgba(247,194,14,.66)', borderWidth: 1 },
+                { label: '', data: [0.05], backgroundColor: 'rgba(102,102,102,.66)', borderWidth: 1 }
             ]
         },
         options: {
             responsive: true,
             maintainAspectRatio: false,
             indexAxis: 'y',
-            scales: {
-                x: {
-                    ticks: {
-                        suggestedMin: 0.0,
-                        suggestedMax: 4.0,
-                        min: 0.0,
-                        max: 4.0,
-                    },
-                    stacked: true,
-                },
-                y: {
-                    stacked: true,
-                },
-            },
+            scales: { x: { ticks: { suggestedMin: 0.0, suggestedMax: 4.0, min: 0.0, max: 4.0, }, stacked: true }, y: { stacked: true } },
             plugins: {
-                title: {
-                    display: true,
-                    text: 'Course GPA Range'
-                },
-                legend: {
-                    display:false
-                },
-                tooltip: {
-                    enabled: false,
-                    callbacks: {
-                        label: function(ctx) {
-                            return ctx.dataset.label;
-                        },
-                    },
-                },
+                title: { display: true, text: 'Course GPA Range' },
+                legend: { display: false },
+                tooltip: { enabled: false, callbacks: { label: function(ctx) { return ctx.dataset.label; } } }
             },
-            interaction: {
-                intersect: false,
-                mode: 'y',
-            },
-        },
+            interaction: { intersect: false, mode: 'y' }
+        }
     });
-    var ctx = document.getElementById('courseLetterChartCanvas').getContext('2d');
-    courseLetterPlot = new Chart(ctx, {
+
+    courseLetterChart = new Chart(ctx = document.getElementById('course_letter_chart_canvas').getContext('2d'), {
         plugins: [ChartDataLabels],
         type: 'bar',
         data: {
             labels: [''],
             datasets: [
-                {
-                    label: 'A',
-                    data: [32],
-                    backgroundColor: 'rgba(128,149,7,0.66)',
-                    borderWidth: 1,
-                },
-                {
-                    label: 'B',
-                    data: [39],
-                    backgroundColor: 'rgba(175,166,5,0.66)',
-                    borderWidth: 1,
-                },
-                {
-                    label: 'C',
-                    data: [14],
-                    backgroundColor: 'rgba(247,194,14,0.66)',
-                    borderWidth: 1,
-                },
-                {
-                    label: 'D',
-                    data: [7],
-                    backgroundColor: 'rgba(250,45,8,0.66)',
-                    borderWidth: 1,
-                },
-                {
-                    label: 'F',
-                    data: [5],
-                    backgroundColor: 'rgba(211,15,2,0.66)',
-                    borderWidth: 1,
-                },
-                {
-                    label: 'Q',
-                    data: [3],
-                    backgroundColor: 'rgba(102,102,102,0.66)',
-                    borderWidth: 1,
-                },
+                { label: 'A', data: [32], backgroundColor: 'rgba(128,149,7,.66)', borderWidth: 1 },
+                { label: 'B', data: [39], backgroundColor: 'rgba(175,166,5,.66)', borderWidth: 1 },
+                { label: 'C', data: [14], backgroundColor: 'rgba(247,194,14,.66)', borderWidth: 1 },
+                { label: 'D', data: [07], backgroundColor: 'rgba(250,45,8,.66)', borderWidth: 1 },
+                { label: 'F', data: [05], backgroundColor: 'rgba(211,15,2,.66)', borderWidth: 1 },
+                { label: 'Q', data: [03], backgroundColor: 'rgba(102,102,102,.66)', borderWidth: 1 }
             ]
         },
         options: {
             responsive: true,
             maintainAspectRatio: false,
             indexAxis: 'y',
-            scales: {
-                x: {
-                    stacked: true,
-                    ticks: {
-                        min: 0,
-                        max: 100,
-                        callback: function(value) {
-                            return value + "%"
-                        }
-                    },
-                },
-                y: {
-                    stacked: true,
-                },
-            },
+            scales: { x: { stacked: true, ticks: { min: 0, max: 100, callback: function(value) { return value + "%" } } }, y: { stacked: true } },
             plugins: {
-                title: {
-                    display: true,
-                    text: 'Course Letter Grades'
-                },
-                legend: {
-                    display:false
-                },
-                tooltip: {
-                    callbacks: {
-                        label: function(ctx) {
-                            return ctx.dataset.label+': '+''+Number(ctx.dataset.data).toFixed(1)+'%';
-                        },
-                    },
-                },
-                datalabels: {
-                    color: '#000000B0',
-                    formatter: function(value, ctx) {
-                        if (Number(ctx.dataset.data) > 1.5) return ctx.dataset.label;
-                        return '';
-                    },
-                },
+                title: { display: true, text: 'Course Letter Grades' },
+                legend: { display: false },
+                tooltip: { callbacks: { label: function(ctx) { return ctx.dataset.label+': '+Number(ctx.dataset.data).toFixed(1)+'%'; } } },
+                datalabels: { color: '#000000B0', formatter: function(value, ctx) { if (Number(ctx.dataset.data) > 1.5) return ctx.dataset.label; return ''; } }
             },
-            interaction: {
-                intersect: false,
-            },
-        },
+            interaction: { intersect: false }
+        }
     });
-    var ctx = document.getElementById('courseOveralldiffChartCanvas').getContext('2d');
-    courseDiffPlot = new Chart(ctx, {
+
+    courseDiffChart = new Chart(ctx = document.getElementById('course_difficulty_chart_canvas').getContext('2d'), {
         plugins: [ChartDataLabels],
         type: 'bar',
         data: {
             labels: [''],
             datasets: [
-                {
-                    label: 'Difficulty',
-                    data: [6],
-                    backgroundColor: 'rgba(247,194,14,0.66)',
-                    borderWidth: 1,
-                },
-                {
-                    label: '',
-                    data: [4],
-                    backgroundColor: 'rgba(102,102,102,0.66)',
-                    borderWidth: 1,
-                },
+                { label: 'Difficulty', data: [6], backgroundColor: 'rgba(247,194,14,.66)', borderWidth: 1, },
+                { label: '', data: [4], backgroundColor: 'rgba(102,102,102,.66)', borderWidth: 1, }
             ]
         },
         options: {
             responsive: true,
             maintainAspectRatio: false,
             indexAxis: 'y',
-            scales: {
-                x: {
-                    stacked: true,
-                    ticks: {
-                        min: 1,
-                        max: 10,
-                    },
-                },
-                y: {
-                    stacked: true,
-                },
-            },
+            scales: { x: { stacked: true, ticks: { min: 1, max: 10 } }, y: { stacked: true } },
             plugins: {
-                title: {
-                    display: true,
-                    text: 'Relative Course Difficulty'
-                },
-                legend: {
-                    display:false
-                },
-                tooltip: {
-                    enabled: false,
-                },
-                datalabels: {
-                    color: '#000000B0',
-                    formatter: function(value, ctx) {
-                        if (ctx.dataset.label == 'Difficulty')
-                            return value+'/10';
-                        return '';
-                    },
-                },
+                title: { display: true, text: 'Relative Course Difficulty' },
+                legend: { display: false },
+                tooltip: { enabled: false },
+                datalabels: { color: '#000000B0', formatter: function(value, ctx) { if (ctx.dataset.label === 'Difficulty') return value+'/10'; return ''; } }
             },
-            interaction: {
-                intersect: false,
-            },
+            interaction: { intersect: false },
         },
     });
-    openOnClick('home_link1', '/home');
-    openOnClick('home_link2', '/home');
-    document.getElementById('thememode_toggle').addEventListener('click', () => {
-        toggleThemeMode();
-        regenGPAPlotChartColors();
+
+    document.getElementById('thememode_toggle')       .addEventListener('click', () => { regenGPAChartColors(); });
+    document.getElementById('course_field')           .addEventListener('keyup', (e) => { if (e.key === "Enter") getCourseData(); });
+    document.getElementById('search_button')          .addEventListener('click', () => { getCourseData(); });
+    document.getElementById('new_chart_colors_button').addEventListener('click', () => { regenGPAChartColors(); });
+    document.getElementById('toggle_raw_data_button') .addEventListener('click', () => { toggleRawData(); });
+    document.getElementById('back_to_top')            .addEventListener('click', () => { document.body.scrollTo({ top: 0, behavior: 'smooth' }); });
+    $(document.body).scroll(function() {
+        if (isElementVisible($('.footer-bar'))) {
+            $('#back-to-top').css('bottom', $(window).height() - $('.footer-bar').position().top);
+        } else {
+            $('#back-to-top').css('bottom','0');
+        }
     });
-    window.dataLayer = window.dataLayer || [];
-    function gtag(){dataLayer.push(arguments);}
-    gtag('js', new Date());
-    gtag('config', 'G-HS51DZ5HEM');
 });
 
-// colors generated with https://medialab.github.io/iwanthue/
-function getColors() {
-    let colors;
-    if(document.body.classList.contains('light-theme')) {
-        colors = [ // colorblind friendly colors
-            "#a0b242", "#5858bc", "#d1972c", "#7283e9", "#65bc69",
-        "#af439d", "#45c097", "#563482", "#728537", "#c083d8",
-        "#bb7937", "#628dd4", "#ba4c41", "#c5639f", "#b44267"
-        ];
-    } else {
-        colors = [ // pastel colors
-            "#97ebdd", "#ddb5dc", "#cfeaaf", "#74aff3", "#e9c59a",
-            "#5ecee9", "#eab4b5", "#98cea5", "#bcb8ec", "#bdc08c",
-            "#92bde8", "#dae9d3", "#7ecac7", "#b3cee3", "#b1beaf"
-        ];
-    }
-    // randomize order
-    return colors.map(value => ({ value, sort: Math.random() })).sort((a, b) => a.sort - b.sort).map(({ value }) => value);
+
+// get supported years/departments
+function getSupportedData() {
+    requestSupported().then((value) => {
+        $("#department_select").empty();
+        allDepartments.forEach(function(value) { $("#department_select").append($("<option></option>").attr("value", value.toUpperCase()).text(value)); });
+        $('#department_select').trigger('chosen:updated');
+        $('#year_range').jRange('updateRange', allYears[0]+','+allYears[allYears.length-1]);
+        $('#year_range').jRange('updateRender', allYears);
+    })
+    .catch((err) => { alert(err); });
 }
 
-// list of supported departments
-const dbDepartments = [
-    "AGCJ", "AGSC", "ALEC", "ALED", "AGEC", "ANSC", "DASC", "BICH", "GENE", "AGSM", "BAEN", "AGLS", "ESSM",
-    "FRSC", "RENR", "EEBL", "ENTO", "FIVS", "HORT", "FSTC", "NUTR", "BESC", "PLPA", "POSC", "RPTS", "MEPS",
-    "SCSC", "WFSC", "NFSC", "ARCH", "ENDS", "CARC", "COSC", "LAND", "LDEV", "PLAN", "URPN", "URSC", "ARTS",
-    "VIST", "VIZA", "BUSH", "INTA", "PSAA", "ACCT", "BUAD", "BUSN", "IBUS", "FINC", "ISYS", "SCMT", "MGMT",
-    "MKTG", "ISTM", "BIMS", "DDHS", "OMFP", "ORDI", "ENDO", "AEGD", "OMSF", "ORTH", "PEDD", "PERI", "PROS",
-    "HPED", "OBIO", "OMFS", "OMFR", "CEHD", "EDAD", "EHRD", "TCMG", "BEFB", "BIED", "CPSY", "EDTC", "EPFB",
-    "EPSY", "INST", "SEFB", "SPED", "SPSY", "ATTR", "DCED", "HEFB", "HLTH", "KINE", "KNFB", "SPMT", "EDCI",
-    "MASC", "MEFB", "RDNG", "TEED", "TEFB", "AERO", "MEMA", "BMEN", "CHEN", "SENG", "CVEN", "ENDG", "ENGR",
-    "ICPE", "CSCE", "ECEN", "ENTC", "ESET", "IDIS", "MMET", "ISEN", "MSEN", "MEEN", "NUEN", "OCEN", "PETE",
-    "BIOT", "EVEN", "MXET", "TCMT", "AREN", "ITDE", "CYBR", "CLEN", "ATMO", "GEOS", "WMHS", "GEOG", "GEOL",
-    "GEOP", "OCNG", "LAW ", "ANTH", "AFST", "FILM", "JOUR", "LBAR", "RELS", "WGST", "COMM", "ECMT", "ECON",
-    "ENGL", "LING", "HISP", "SPAN", "HIST", "ARAB", "ASIA", "CHIN", "CLAS", "EURO", "FREN", "GERM", "INTS",
-    "ITAL", "JAPN", "MODL", "RUSS", "MUSC", "PERF", "THAR", "PHIL", "POLS", "PSYC", "SOCI", "HHUM", "LMAS",
-    "MUST", "MCMD", "MPIM", "MSCI", "HCPI", "EDHP", "MPHY", "NEXT", "AERS", "SOMS", "MLSC", "NVSC", "FORS",
-    "NURS", "PHEO", "PHEB", "PHPM", "HPCH", "PHLT", "SOPH", "BIOL", "CHEM", "NRSC", "SCEN", "MATH", "ASTR",
-    "PHYS", "STAT", "VMID", "VIBS", "VLCS", "VTPP", "VPAR", "VPAT", "VTMI", "VTPB", "VSCS"
-].sort();
+// get data for selected course
+function getCourseData() {
+    let department = $("#department_select").val();
+    let course = $("#course_field").val();
+    if (department === '' || course === '') { return; }
 
-// list of supported years
-const dbYears = [2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021];
+    let searchButton = $("#search_button").html();
+    $("#search_button").html('<i class="fa fa-refresh fa-spin" title="Loading..."></i>');
+    requestSearch(department, course)
+    .catch((err) => { alert(err); })
+    .finally(() => {
+        $("#search_button").html(searchButton);
+        autoPopulateProfs();
+    });
+}
 
-// list of professors that teach selected class, populated at runtime
-let dbProfessors = [];
-
-// list containing rawdata retrieved from server, populated at runtime
-let dbRawDataCache = [];
-
-// list containing rawdata retrieved from server, populated at runtime
-let dbRawData = [];
-
-// list used as cache to not spam server with identical requests
-let cache = [];
-
-// send request to server and then cache response for later use
-function queryDB(department, course) {
+// send [/supported] request to server and cache response
+function requestSupported() {
     return new Promise((resolve, reject) => {
-        setTimeout(() => {
-            reject('Request timed out');
-            return;
-        }, 5000);
+        setTimeout(() => { reject('Server error ([/supported] timed out).'); return; }, 5000);
         
-        let found = -1;
+        for (let i = 0; i < responseCache.length; i++) {
+            if (responseCache[i].query === 'supported') {
+                allYears = responseCache[i].years;
+                allDepartments = responseCache[i].departments;
+                resolve('Found in cache');
+                return;
+            }
+        }
+
+        fetch('supported').then((response) => {
+            response.text().then((responseText) => {
+                if (responseText === '[]') {
+                    reject('Server error ([/supported] bad response).');
+                    return;
+                }
+                allYears = [];
+                allDepartments = [];
+                JSON.parse(responseText.split('|')[0]).forEach((year) => { allYears.push(year.year); });
+                JSON.parse(responseText.split('|')[1]).forEach((dept) => { allDepartments.push(dept.departmentName); });
+                allYears.sort();
+                allDepartments.sort();
+                responseCache.push({ 'query': 'supported', 'years': allYears, 'departments': allDepartments });
+                resolve('Done');
+            });
+        }).catch((err) => { reject(err); });
+    });
+}
+
+// send [/search] request to server and cache response
+function requestSearch(department, course) {
+    return new Promise((resolve, reject) => {
+        setTimeout(() => { reject('Server error ([/search] timed out). Try again in a bit.'); return; }, 5000);
+        department = department.toUpperCase();
+        course = course.toUpperCase();
         let query = 'search?d='+department+'&c='+course;
 
-        for (i = 0; i < cache.length; i++) {
-            if (cache[i].query == query) {
-                found = i;
-                break;
+        for (let i = 0; i < responseCache.length; i++) {
+            if (responseCache[i].query === query) {
+                if (responseCache[i].data === null) { reject(department+' '+course+' not found!'); }
+                courseData = responseCache[i].data;
+                courseDataAll = responseCache[i].data;
+                filterCourseData();
+                resolve('Found in cache');
+                return;
             }
         }
 
-        if (found != -1) {
-            if (cache[found].text != '[]') {
-                setDBRawDataCache(JSON.parse(cache[found].text));
+        fetch(query).then((response) => {
+            response.text().then((responseText) => {
+                if (responseText === '[]') {
+                    responseCache.push({ 'query': query, 'data': null });
+                    reject(department+' '+course+' not found!');
+                    return;
+                }
+                courseData = JSON.parse(responseText);
+                courseDataAll = JSON.parse(responseText);
+                filterCourseData();
+                responseCache.push({ 'query': query, 'data': courseDataAll });
                 resolve('Done');
-            }
-            else {
-                reject(department+' '+course+' not found!');
-            }
-        }
-        else {
-            fetch(query)
-            .then((response) => {
-                response.text()
-                .then((text) => {
-                    try {
-                        cache.push({
-                            'query': query,
-                            'text': text
-                        });
-                        if (text != '[]') {
-                            setDBRawDataCache(JSON.parse(text));
-                            resolve('Done');
-                        }
-                        else {
-                            reject(department+' '+course+' not found!');
-                        }
-                    } catch {
-                        reject('Error: '+text);
-                    }
-                })
-            })
-            .catch((err) => {
-                reject('Error: '+err);
             });
-        }
+        }).catch((err) => { reject(err); });
     });
 }
 
-// expands [2017,2021] into [2017,2018,2019,2020,2021]
-function interpolateNumArray(data,stepsize) {
-    newData = [Number(data[0])];
-    while (newData[newData.length-1] < Number(data[data.length-1])) {
-        newData.push(newData[newData.length-1] + stepsize);
-    }
-    return newData;
-};
+// refilter and update data based on new selections
+function filterCourseData() {
+    let selectedYears = interpolateNumArray($('#year_range').val().split(','), 1);
+    let selectedSemesters = ($("#semester_select").chosen().val()+'').split(',').map((value) => { return value.toUpperCase(); });
+    let selectedHonors = $("#honors_select").chosen().val().toUpperCase();
 
-// filter json to return unique keys which fit specified filters
-function filterUnique(data, keyName, filterWhitelist, filterKeyName, filterWhitelist2, filterKeyName2) {
-    var unique = [];
-    for (i = 0; i < data.length; i++) {
-        if (filterWhitelist == null || filterWhitelist.indexOf(data[i][filterKeyName]) != -1) {
-            if (filterWhitelist2 == null || filterWhitelist2.indexOf(data[i][filterKeyName2]) != -1) {
-                if (unique.indexOf(data[i][keyName]) === -1) {
-                    unique.push(data[i][keyName]);
-                }
-            }
-        }
-    }
-    return unique;
+    // deep copy courseDataAll into courseData
+    courseData = JSON.parse(JSON.stringify(courseDataAll));
+    // filter courseData by selected year range and semesters
+    courseData = courseData.filter(course => selectedYears.includes(course.year) && selectedSemesters.includes(course.semester));
+    // filter courseProfs to only include unique professorNames
+    courseProfs = courseData.filter((value, index, self) => { return self.indexOf(value) === index; });
+    // filter courseData by selected honors
+    courseData = courseData.filter(course => honorsFilter(selectedHonors, course.honors));
 }
 
-// filter json to return all keys which fit specified filters
-function filterJSON(data, filterWhitelist, filterKeyName, filterWhitelist2, filterKeyName2, filterWhitelist3, filterKeyName3) {
-    var matches = [];
-    for (i = 0; i < data.length; i++) {
-        if (filterWhitelist == null || filterWhitelist.indexOf(data[i][filterKeyName]) != -1) {
-            if (filterWhitelist2 == null || filterWhitelist2.indexOf(data[i][filterKeyName2]) != -1) {
-                if (filterWhitelist3 == null || filterWhitelist3.indexOf(data[i][filterKeyName3]) != -1) {
-                    matches.push(data[i]);
-                }
-            }
-        }
-    }
-    return matches;
-}
+// update all data used by ui
+function updateSelection() {
+    var department = $("#department_select").val();
+    var course = $("#course_field").val();
+    if (department === '' || course === '') { return; }
 
-// filter json to return all keys which pass specified filter func
-function filterFuncJSON(data, filterKeyName, filterFunc, filterFuncArg) {
-    var matches = [];
-    for (i = 0; i < data.length; i++) {
-        if (filterFunc(filterFuncArg,data[i][filterKeyName])) {
-            matches.push(data[i]);
-        }
-    }
-    return matches;
-}
-
-// replace gpa numbers in json to strings with proper padding (3->3.000)
-function padNumJSON(data, keyName, padding) {
-    for (i = 0; i < data.length; i++) {
-        data[i][keyName] = ''+Number(data[i][keyName]).toFixed(padding)+'';
-    }
-    return data;
-}
-
-// replace number in json to user legible boolean value
-function numBoolJSON(data, keyName) {
-    for (i = 0; i < data.length; i++) {
-        if (Number(data[i][keyName]) == 0) {
-            data[i][keyName] = 'No'
-        } else if (Number(data[i][keyName]) == 1) {
-            data[i][keyName] = 'Yes'
-        }
-    }
-    return data;
-}
-
-// get array of allowed sections based on value of honors
-function honorsFilter(honors, honorsValue) {
-    if (honors == "INHONORS") return true;
-    if (honors == "EXHONORS") return honorsValue === 'No';
-    if (honors == "ONHONORS") return honorsValue === 'Yes';
-    return false;
-}
-
-// get functions
-function getDBRawDataCache() {
-    return dbRawDataCache;
-}
-
-function getDBRawData() {
-    return dbRawData;
-}
-
-function getDBDepartments() {
-    return dbDepartments;
-}
-
-function getDBYears() {
-    return dbYears;
-}
-
-function getDBProfessors() {
-    return dbProfessors;
-}
-
-function setDBRawDataCache(newdbRawDataCache) {
-    dbRawDataCache = newdbRawDataCache;
-
-    getGPARangeChartDataset($('#year-range').val().split(','),$("#semester-select").chosen().val(),$("#honors-select").chosen().val(),
-    (newDataset) => {
-        courseGpaPlot.data.datasets = newDataset;
-        courseGpaPlot.update('none');
+    filterCourseData();
+    
+    if (courseDataGrid === undefined) { }
+    else { courseDataGrid.updateConfig({ data: getCourseDataGridDataset() }).forceRender(); }
+    
+    courseGPAChart.data.labels = getGPAChartLabels();
+    getGPAChartDataset((newDataset) => {
+        courseGPAChart.data.datasets = newDataset;
+        courseGPAChart.update('none');
     });
-    getLetterChartDataset($('#year-range').val().split(','),$("#semester-select").chosen().val(),$("#honors-select").chosen().val(),
-    (newDataset) => {
-        courseLetterPlot.data.datasets = newDataset;
-        courseLetterPlot.update('none');
+    getGPARangeChartDataset((newDataset) => {
+        courseRangeChart.data.datasets = newDataset;
+        courseRangeChart.update('none');
     });
-    getCourseDifficultyChartDataset($('#year-range').val().split(','),$("#semester-select").chosen().val(),$("#honors-select").chosen().val(),
-    (newDataset) => {
-        courseDiffPlot.data.datasets = newDataset;
-        courseDiffPlot.update('none');
+    getLetterChartDataset((newDataset) => {
+        courseLetterChart.data.datasets = newDataset;
+        courseLetterChart.update('none');
     });
+    getCourseDifficultyChartDataset((newDataset) => {
+        courseDiffChart.data.datasets = newDataset;
+        courseDiffChart.update('none');
+    });
+    updateThemeMode();
 }
 
-// refilter display data from cache
-function updateData(years, semesters, professors, honors) {
-    dbRawData = [];
-    years = interpolateNumArray(years,1);
-    semesters = semesters.map(semester => semester.toUpperCase())
-    dbProfessors = filterUnique(dbRawDataCache,'professorName',semesters,'semester');
-    dbRawData = padNumJSON(dbRawDataCache,'avgGPA',3)
-    dbRawData = numBoolJSON(dbRawDataCache,'honors')
-    dbRawData = filterJSON(dbRawData, years,'year',semesters,'semester',professors,'professorName');
-    dbRawData = filterFuncJSON(dbRawData, 'honors', honorsFilter, honors)
-}
-
-// generate labels for gpa plot chart
-function getGPAPlotChartLabels(years, semesters) {
-    labels = []
+// generate labels for courseGPAChart
+function getGPAChartLabels(years, semesters) {
+    if (!years) years = $('#year_range').val().split(',');
+    if (!semesters) semesters = $("#semester_select").chosen().val();
+    let labels = []
     years = interpolateNumArray(years, 1);
     for (let i = 0; i < years.length; i++) {
         for (let j = 0; j < semesters.length; j++) {
@@ -656,135 +336,85 @@ function getGPAPlotChartLabels(years, semesters) {
     return labels;
 }
 
-// automatically select profs for gpaPlot
+// automatically select profs for courseGPAChart
 function autoPopulateProfs() {
-    $("#professor-select").empty();
-    var professors = getDBProfessors();
-    professors.forEach((element) => {
+    // filter courseProfs to only include professors that have taught at least 2 different semesters
+    let profs = courseProfs.filter((value, index, self) => {
         let count = 0;
-        let years = [];
-        let semesters = [];
-        let rawData = getDBRawDataCache();
-        for (let i = 0; i < rawData.length; i++) {
-            if ((rawData[i]['professorName'].toUpperCase() == element.toUpperCase()) && (years.indexOf(rawData[i]['year']) == -1 || semesters.indexOf(rawData[i]['semester']) == -1)) {
-                count += 1;
-                years.push(rawData[i]['year']);
-                semesters.push(rawData[i]['semester']);
+        for (let i = 0; i < self.length; i++) {
+            if (self[i].professorName === value.professorName && (self[i].year !== value.year || self[i].semester !== value.semester)) {
+                count++;
             }
         }
-        if (count > 1) {
-            $("#professor-select").append($("<option selected></option>").attr("value", element.toUpperCase()).text(element));
-        } else {
-            $("#professor-select").append($("<option></option>").attr("value", element.toUpperCase()).text(element));
-        }
+        return count >= 2;
     });
-    $('#professor-select').trigger('chosen:updated');
-    updateSelections();
-}
+    $("#professor_select").empty();
 
-// regenerate colors for gpa plot chart if not using placeholder data
-function regenGPAPlotChartColors() {
-    if (dbRawDataCache.length !== 0) {
-        getGPAPlotChartDataset($('#year-range').val().split(','),$("#semester-select").chosen().val(),$("#professor-select").chosen().val(),
-        (newDataset) => {
-            gpaPlot.data.datasets = newDataset;
-            gpaPlot.update('none');
-        });
-    }
+    // all filtered profs are added to the dropdown (selected by default)
+    profs = profs.map(course => course.professorName);
+    profs = profs.filter((value, index, self) => { return self.indexOf(value) === index; });
+    profs.forEach((prof) => { $("#professor_select").append('<option value="'+prof+'" selected>'+prof+'</option>'); });
+
+    // all remaining profs are added to the dropdown
+    let otherProfs = courseProfs.map(course => course.professorName);
+    otherProfs = otherProfs.filter((value, index, self) => { return self.indexOf(value) === index && !profs.includes(value); });
+    otherProfs.forEach((prof) => { $("#professor_select").append('<option value="'+prof+'">'+prof+'</option>'); });
+
+    // update dropdown and chart data
+    $('#professor_select').trigger('chosen:updated');
+    updateSelection();
 }
 
 // FIXME: remake this unoptimized mess
-// generate datasets to use in gpa plot chart
-function getGPAPlotChartDataset(years, semesters, professors, callback) {
-    years = interpolateNumArray(years,1);
-    let rawData = dbRawData
-    let avgGPA = new Array(professors.length);
-    let count = new Array(professors.length);
+// generate datasets to use in courseGPAChart
+function getGPAChartDataset(callback) {
+    let years = interpolateNumArray(($('#year_range').val()+'').split(','),1);
+    let semesters = $("#semester_select").chosen().val();
+    let professors = $("#professor_select").chosen().val();
 
-    for (let i = 0; i < avgGPA.length; i++) {
-        avgGPA[i] = new Array(years.length*semesters.length).fill(0);
-        count[i] = new Array(years.length*semesters.length).fill(0);
+    let profWeightedGPA = new Array(professors.length);
+    let profNumStudents = new Array(professors.length);
+
+    for (let i = 0; i < profWeightedGPA.length; i++) {
+        profWeightedGPA[i] = new Array(years.length*semesters.length).fill(0);
+        profNumStudents[i] = new Array(years.length*semesters.length).fill(0);
     }
 
-    for (let j = 0; j < rawData.length; j++) {
+    for (let j = 0; j < courseData.length; j++) {
         for (let k = 0; k < years.length*semesters.length; k++) {
             let tmp1 = Math.floor(k/semesters.length)%years.length;
             let tmp2 = Math.floor(k%semesters.length);
-            if (rawData[j]['year'] == Number(years[tmp1]) && rawData[j]['semester'] == semesters[tmp2].toUpperCase()) {
-                index1 = professors.indexOf(rawData[j]['professorName']);
-                if (index1 != -1) {
-                    avgGPA[index1][k] = Number(avgGPA[index1][k]) + Number(rawData[j]['avgGPA']);
-                    count[index1][k] = Number(count[index1][k]) + 1;
+            if (courseData[j].year === Number(years[tmp1]) && courseData[j].semester === semesters[tmp2].toUpperCase()) {
+                let prof = professors.indexOf(courseData[j].professorName);
+                if (prof != -1) {
+                    let sectionNumStudents = Number(courseData[j].numA)+Number(courseData[j].numB)+Number(courseData[j].numC)+Number(courseData[j].numD)+Number(courseData[j].numF);
+                    profWeightedGPA[prof][k] += (Number(courseData[j].avgGPA) * Number(sectionNumStudents));
+                    profNumStudents[prof][k] += Number(sectionNumStudents);
                 }
             }
         }
     }
 
-    for (let i = 0; i < avgGPA.length; i++) {
+    for (let i = 0; i < profWeightedGPA.length; i++) {
         for (let j = 0; j < years.length*semesters.length; j++) {
-            avgGPA[i][j] = (count[i][j] == 0) ? undefined : Number(avgGPA[i][j]) / Number(count[i][j]);
+            profWeightedGPA[i][j] = Number(profWeightedGPA[i][j]) / Number(profNumStudents[i][j]);
         }
     }
+
     let colors = getColors();
     let dataset = [];
-    for (let i = 0; i < avgGPA.length; i++) {
-        //let color = '#'+(Math.random()*0xFFFFFF<<0).toString(16).padStart(6,'0');
+    for (let i = 0; i < profWeightedGPA.length; i++) {
         dataset.push({
-            label: professors[i],
-            data: avgGPA[i],
-            fill: false,
-            borderColor: colors[i],
-            backgroundColor: colors[i]+'80',
-            tension: 0.1,
-            borderWidth: 2,
-            segment: {
-                borderDash: ctx => skipped(ctx, [6, 6]),
-            },
+            label: professors[i], data: profWeightedGPA[i], fill: false, borderColor: colors[i],
+            backgroundColor: colors[i]+'80', tension: 0.1, borderWidth: 2,
+            segment: { borderDash: ctx => skipped(ctx, [6, 6]) }
         });
     }
     return callback(dataset);
 }
 
-// generate datasets to use in avg letter grade chart
-function getLetterChartDataset(years, semesters, honors, callback) {
-    years = interpolateNumArray(years,1);
-    let rawData = dbRawDataCache;
-    let labels = ['A','B','C','D','F','Q']
-    let bgColors = ['rgba(128,149,7,0.66)','rgba(175,166,5,0.66)','rgba(247,194,14,0.66)','rgba(250,45,8,0.66)','rgba(211,15,2,0.66)','rgba(102,102,102,0.66)']
-    let avgLetterGrade = new Array(labels.length).fill(0);
-
-    for (let i = 0; i < rawData.length; i++) {
-        if (years.includes(rawData[i]['year']) && semesters.includes(rawData[i]['semester']) && honorsFilter(honors,rawData[i]['honors'])) {
-            avgLetterGrade[0] += Number(rawData[i]['numA']);
-            avgLetterGrade[1] += Number(rawData[i]['numB']);
-            avgLetterGrade[2] += Number(rawData[i]['numC']);
-            avgLetterGrade[3] += Number(rawData[i]['numD']);
-            avgLetterGrade[4] += Number(rawData[i]['numF']);
-            avgLetterGrade[5] += Number(rawData[i]['numQ']);
-        }
-    }
-    let count = avgLetterGrade[0]+avgLetterGrade[1]+avgLetterGrade[2]+avgLetterGrade[3]+avgLetterGrade[4]+avgLetterGrade[5];
-    for (let i = 0; i < avgLetterGrade.length; i++) {
-        // can't use 100 because sometimes charts.js expands the chart to 120%. need to find a fix
-        avgLetterGrade[i] = (avgLetterGrade[i]/count)*99.999999;
-    }
-
-    dataset = [];
-    for (let i = 0; i < avgLetterGrade.length; i++) {
-        dataset.push({
-            label: labels[i],
-            data: [avgLetterGrade[i]],
-            backgroundColor: bgColors[i],
-            borderWidth: 1,
-        });
-    }
-    return callback(dataset);
-}
-
-// generate datasets to use in gpa range chart
-function getGPARangeChartDataset(years, semesters, honors, callback) {
-    years = interpolateNumArray(years,1);
-    let rawData = dbRawDataCache;
+// generate datasets to use in courseRangeChart
+function getGPARangeChartDataset(callback) {
     let labels = ['','GPA Low: ','GPA Avg: ','GPA High: ','']
     let bgColors = ['rgba(102,102,102,0.66)','rgba(247,194,14,0.66)','rgba(128,149,7,0.66)','rgba(247,194,14,0.66)','rgba(102,102,102,0.66)']
     let gpaRange = new Array(labels.length).fill(0);
@@ -793,19 +423,13 @@ function getGPARangeChartDataset(years, semesters, honors, callback) {
     let gpaAvg = 0;
 
     let count = 0;
-    for (let i = 0; i < rawData.length; i++) {
-        if (years.includes(rawData[i]['year']) && semesters.includes(rawData[i]['semester']) && honorsFilter(honors,rawData[i]['honors'])) {
-            gpaAvg += Number(rawData[i]['avgGPA']);
-            count += 1;
+    for (let i = 0; i < courseData.length; i++) {
+        let num = Number(courseData[i]['avgGPA']);
+        gpaAvg += num;
+        count += 1;
 
-            if (gpaMin > Number(rawData[i]['avgGPA'])) {
-                gpaMin = Number(rawData[i]['avgGPA']);
-            }
-
-            if (gpaMax < Number(rawData[i]['avgGPA'])) {
-                gpaMax = Number(rawData[i]['avgGPA']);
-            }
-        }
+        gpaMin = Math.min(gpaMin, num);
+        gpaMax = Math.max(gpaMax, num);
     }
     gpaAvg = (gpaAvg/count);
 
@@ -831,10 +455,44 @@ function getGPARangeChartDataset(years, semesters, honors, callback) {
     return callback(dataset);
 }
 
-// generate datasets to use in difficulty range chart
-function getCourseDifficultyChartDataset(years, semesters, honors, callback) {
-    years = interpolateNumArray(years,1);
-    let rawData = dbRawDataCache;
+// generate datasets to use in courseLetterChart
+function getLetterChartDataset(callback) {
+    let labels = ['A','B','C','D','F','Q']
+    let bgColors = ['rgba(128,149,7,0.66)','rgba(175,166,5,0.66)','rgba(247,194,14,0.66)','rgba(250,45,8,0.66)','rgba(211,15,2,0.66)','rgba(102,102,102,0.66)']
+    let avgLetterGrade = new Array(labels.length).fill(0);
+
+    for (let i = 0; i < courseData.length; i++) {
+        avgLetterGrade[0] += Number(courseData[i]['numA']);
+        avgLetterGrade[1] += Number(courseData[i]['numB']);
+        avgLetterGrade[2] += Number(courseData[i]['numC']);
+        avgLetterGrade[3] += Number(courseData[i]['numD']);
+        avgLetterGrade[4] += Number(courseData[i]['numF']);
+        avgLetterGrade[5] += Number(courseData[i]['numQ']);
+    }
+    let count = avgLetterGrade[0]+avgLetterGrade[1]+avgLetterGrade[2]+avgLetterGrade[3]+avgLetterGrade[4]+avgLetterGrade[5];
+    for (let i = 0; i < avgLetterGrade.length; i++) {
+        // can't use 100 because sometimes charts.js expands the chart to 120%
+        avgLetterGrade[i] = (avgLetterGrade[i]/count)*99.999999;
+    }
+
+    dataset = [];
+    for (let i = 0; i < avgLetterGrade.length; i++) {
+        dataset.push({
+            label: labels[i],
+            data: [avgLetterGrade[i]],
+            backgroundColor: bgColors[i],
+            borderWidth: 1,
+        });
+    }
+    return callback(dataset);
+}
+
+// generate datasets to use in courseDiffChart
+function getCourseDifficultyChartDataset(callback) {
+    let years = interpolateNumArray(($('#year_range').val()+'').split(','),1);
+    let semesters = $("#semester_select").chosen().val();
+    let honors = $("#honors_select").chosen().val();
+
     let bgColors = ['rgba(128,149,7,0.66)','rgba(175,166,5,0.66)','rgba(247,194,14,0.66)','rgba(250,45,8,0.66)','rgba(211,15,2,0.66)']
     let minGPA = 4;
     let avgGPA = 0;
@@ -844,28 +502,28 @@ function getCourseDifficultyChartDataset(years, semesters, honors, callback) {
     let courseDiff = 0;
     let profs = []
 
-    for (let i = 0; i < rawData.length; i++) {
-        if (years.includes(rawData[i]['year']) && semesters.includes(rawData[i]['semester']) && honorsFilter(honors,rawData[i]['honors'])) {
-            avgGPA += Number(rawData[i]['avgGPA']);
+    for (let i = 0; i < courseDataAll.length; i++) {
+        if (years.includes(courseDataAll[i]['year']) && semesters.includes(courseDataAll[i]['semester']) && honorsFilter(honors,courseDataAll[i]['honors'])) {
+            avgGPA += Number(courseDataAll[i]['avgGPA']);
             count += 1;
 
-            numStudentsPass += Number(rawData[i]['numA']);
-            numStudentsPass += Number(rawData[i]['numB']);
-            numStudentsPass += Number(rawData[i]['numC']);
-            numStudentsFail += Number(rawData[i]['numD']);
-            numStudentsFail += Number(rawData[i]['numF']);
-            numStudentsFail += Number(rawData[i]['numI']);
-            numStudentsFail += Number(rawData[i]['numS']);
-            numStudentsFail += Number(rawData[i]['numU']);
-            numStudentsFail += Number(rawData[i]['numQ']);
-            numStudentsFail += Number(rawData[i]['numX']);
+            numStudentsPass += Number(courseDataAll[i]['numA']);
+            numStudentsPass += Number(courseDataAll[i]['numB']);
+            numStudentsPass += Number(courseDataAll[i]['numC']);
+            numStudentsFail += Number(courseDataAll[i]['numD']);
+            numStudentsFail += Number(courseDataAll[i]['numF']);
+            numStudentsFail += Number(courseDataAll[i]['numI']);
+            numStudentsFail += Number(courseDataAll[i]['numS']);
+            numStudentsFail += Number(courseDataAll[i]['numU']);
+            numStudentsFail += Number(courseDataAll[i]['numQ']);
+            numStudentsFail += Number(courseDataAll[i]['numX']);
 
-            if (!profs.includes(rawData[i]['professorName'])) {
-                profs.push(rawData[i]['professorName']);
+            if (!profs.includes(courseDataAll[i]['professorName'])) {
+                profs.push(courseDataAll[i]['professorName']);
             }
 
-            if (minGPA > Number(rawData[i]['avgGPA'])) {
-                minGPA = Number(rawData[i]['avgGPA']);
+            if (minGPA > Number(courseDataAll[i]['avgGPA'])) {
+                minGPA = Number(courseDataAll[i]['avgGPA']);
             }
         }
     }
@@ -900,104 +558,27 @@ function getCourseDifficultyChartDataset(years, semesters, honors, callback) {
     return callback(dataset);
 }
 
-// update all data used by interface
-function updateSelections(updateProfsList) {
-    var department = $("#department-select").val();
-    var course = $("#course-field").val();
-    if (department == '' || course == '') {
-        return;
-    }
-    updateData($('#year-range').val().split(','),$("#semester-select").chosen().val(),$("#professor-select").chosen().val(),$("#honors-select").chosen().val());
-
-    if (updateProfsList) {
-        $("#professor-select").empty();
-        var professors = getDBProfessors();
-        professors.forEach((element) => {
-            $("#professor-select").append($("<option></option>").attr("value", element.toUpperCase()).text(element));
-        });
-        $("#professor-select").attr("data-placeholder", "Click here to select some professors");
-        $('#professor-select').trigger('chosen:updated');
-    }
-
-    if (rawdatagrid == undefined){}
-    else {
-        rawdatagrid.updateConfig({
-            data: getDBRawData(),
-        }).forceRender();
-    }
-    
-    gpaPlot.data.labels = getGPAPlotChartLabels($('#year-range').val().split(','),$("#semester-select").chosen().val());
-    getGPAPlotChartDataset($('#year-range').val().split(','),$("#semester-select").chosen().val(),$("#professor-select").chosen().val(),
-    (newDataset) => {
-        gpaPlot.data.datasets = newDataset;
-        gpaPlot.update('none');
-    });
-    getGPARangeChartDataset($('#year-range').val().split(','),$("#semester-select").chosen().val(),$("#honors-select").chosen().val(),
-    (newDataset) => {
-        courseGpaPlot.data.datasets = newDataset;
-        courseGpaPlot.update('none');
-    });
-    getLetterChartDataset($('#year-range').val().split(','),$("#semester-select").chosen().val(),$("#honors-select").chosen().val(),
-    (newDataset) => {
-        courseLetterPlot.data.datasets = newDataset;
-        courseLetterPlot.update('none');
-    });
-    getCourseDifficultyChartDataset($('#year-range').val().split(','),$("#semester-select").chosen().val(),$("#honors-select").chosen().val(),
-    (newDataset) => {
-        courseDiffPlot.data.datasets = newDataset;
-        courseDiffPlot.update('none');
-    });
-    updateThemeMode();
+// generate dataset to use in courseDataGrid
+function getCourseDataGridDataset() {
+    let selectedProfessors = ($("#professor_select").chosen().val()+'').split(',').map((value) => { return value.toUpperCase(); });
+    // deep copy courseData into courseDataGridDataset
+    let courseDataGridDataset = JSON.parse(JSON.stringify(courseData));
+    // for each element in courseDataGridDataset translate element.honors to a string
+    courseDataGridDataset = courseDataGridDataset.map((course) => { course.honors = course.honors ? 'Yes' : 'No'; return course; });
+    // pad all gpa numbers to 3 decimal places
+    courseDataGridDataset = courseDataGridDataset.map(course => { course.avgGPA = ''+Number(course.avgGPA).toFixed(3); return course; });
+    // filter courses to only include selected professors
+    courseDataGridDataset = courseDataGridDataset.filter(course => selectedProfessors.includes(course.professorName));
+    return courseDataGridDataset;
 }
 
-// search button js to initiate db query
-function getCourseData() {
-    var department = $("#department-select").val();
-    var course = $("#course-field").val();
-    if (department == '' || course == '') {
-        return;
-    }
-
-    var imgsave = $("#search-button-img").html();
-    $("#search-button-img").html('<i class="fa fa-refresh fa-spin fa-lg" style="color:white;" title="Loading..."></i>');
-    queryDB(department, course)
-    .then((value) => {
-        $("#professor-select").empty();
-        updateData($('#year-range').val().split(','),$("#semester-select").chosen().val(),$("#professor-select").chosen().val(),$("#honors-select").chosen().val());
-        var professors = getDBProfessors();
-        professors.forEach((element) => {
-            $("#professor-select").append($("<option></option>").attr("value", element.toUpperCase()).text(element));
-        });
-        $("#professor-select").attr("data-placeholder", "Click here to select some professors");
-        $('#professor-select').trigger('chosen:updated');
-        updateSelections(true);
-    })
-    .catch((err) => alert(err))
-    .finally(() => {
-        $("#search-button-img").html(imgsave);
-        if (rawdatagrid == undefined){}
-        else {
-            rawdatagrid.updateConfig({
-                data: getDBRawData(),
-            }).forceRender();
-        }
-        autoPopulateProfs();
-    });
-    updateThemeMode();
-}
-
-// rawdatabutton js to toggle showing the raw data table
+// toggle showing the raw data table
 function toggleRawData() {
-    toggleRawDataHTML = $("#toggle-raw-data-button").html().trim();
-    if (toggleRawDataHTML.includes('<i class="fa fa-caret-square-o-up')) {
-        $("#toggle-raw-data-button").html('&nbsp;<i class="fa fa-caret-square-o-down" title="Hide Raw Data"></i>&nbsp;&nbsp;Hide Raw Data&nbsp;');
-        $(".raw-data-layout-container").show(10,(function() {
-            //jumpToAnchor("raw-data-layout-container");
-            updateThemeMode();
-        }));
-        // only load table if needed
-        if (rawdatagrid == undefined) {
-            rawdatagrid = new gridjs.Grid({
+    if ($("#toggle_raw_data_button").html().trim().includes('<i class="fa fa-caret-square-o-up')) {
+        $("#toggle_raw_data_button").html('&nbsp;<i class="fa fa-caret-square-o-down" title="Hide Raw Data"></i>&nbsp;&nbsp;Hide Raw Data&nbsp;');
+        $("#raw_data_layout_container").show(10,(function() { updateThemeMode(); }));
+        if (courseDataGrid === undefined) {
+            courseDataGrid = new gridjs.Grid({
                 width: '100%',
                 autoWidth: true,
                 sort: true,
@@ -1006,38 +587,59 @@ function toggleRawData() {
                     {id:'numA',name:'A',sort:false}, {id:'numB',name:'B',sort:false}, {id:'numC',name:'C',sort:false}, {id:'numD',name:'D',sort:false}, {id:'numF',name:'F',sort:false},
                     {id:'numI',name:'I',sort:false}, {id:'numQ',name:'Q',sort:false}, {id:'numS',name:'S',sort:false}, {id:'numU',name:'U',sort:false}, {id:'numX',name:'X',sort:false},
                 ],
-                data: getDBRawData(),
-            }).render(document.getElementById("raw-data-table-container"));
-            $(window).resize(function(){
-                rawdatagrid.updateConfig().forceRender();
-            });
-        } else {
-            rawdatagrid.updateConfig().forceRender();
-        }
+                data: getCourseDataGridDataset()
+            }).render(document.getElementById("raw_data_table_container"));
+            $(window).resize(function() { courseDataGrid.updateConfig({ data: getCourseDataGridDataset() }).forceRender(); });
+        } else { courseDataGrid.updateConfig({ data: getCourseDataGridDataset() }).forceRender(); }
     }
     else {
-        $("#toggle-raw-data-button").html('&nbsp;<i class="fa fa-caret-square-o-up" title="Display Raw Data"></i>&nbsp;&nbsp;Display Raw Data&nbsp;');
-        $(".raw-data-layout-container").hide(10,(function() {}));
+        $("#toggle_raw_data_button").html('&nbsp;<i class="fa fa-caret-square-o-up" title="Display Raw Data"></i>&nbsp;&nbsp;Display Raw Data&nbsp;');
+        $("#raw_data_layout_container").hide(10,(function() {}));
     }
 }
 
-function openOnClick(elementID, link) {
-    document.getElementById(elementID).addEventListener('click', () => { window.location=link;});
+// regenerate colors for courseGPAChart if not using placeholder data
+function regenGPAChartColors() {
+    if (courseGPAChart.data.datasets !== courseGPAChartPlaceholderDataset) {
+        getGPAChartDataset((newDataset) => {
+            courseGPAChart.data.datasets = newDataset;
+            courseGPAChart.update('none');
+        });
+    }
 }
 
-// toggle-theme js to toggle between light and dark theme
-function toggleThemeMode() {
-    document.cookie = 'lightmode='+!document.cookie.includes('lightmode=true')+'; SameSite=Strict;';
-    updateThemeMode();
+// check if honors courses are selected
+function honorsFilter(selectedHonors, isHonors) {
+    if (selectedHonors === "INHONORS") return true;
+    if (selectedHonors === "EXHONORS") return !Boolean(isHonors);
+    if (selectedHonors === "ONHONORS") return Boolean(isHonors);
+    return false;
 }
 
-function updateThemeMode() {
-    var light_theme = document.cookie.includes('lightmode=true')
-    if (light_theme && !document.body.classList.contains('light-theme')) {
-        document.getElementById('thememode_toggle').innerHTML = '<i class="fa fa-sun-o" aria-hidden="true"></i>&nbsp;<i class="fa fa-toggle-on" aria-hidden="true"></i>';
+// expands [2017,2021] into [2017,2018,2019,2020,2021]
+function interpolateNumArray(numArray, stepsize) {
+    let newArray = [Number(numArray[0])];
+    while (newArray[newArray.length-1] < Number(numArray[numArray.length-1])) { newArray.push(newArray[newArray.length-1] + stepsize); }
+    return newArray;
+};
+
+// colors generated with https://medialab.github.io/iwanthue/
+function getColors() {
+    let colors;
+    if(document.body.classList.contains('light-theme')) {
+        colors = [ // colorblind friendly colors
+            "#a0b242", "#5858bc", "#d1972c", "#7283e9", "#65bc69",
+            "#af439d", "#45c097", "#563482", "#728537", "#c083d8",
+            "#bb7937", "#628dd4", "#ba4c41", "#c5639f", "#b44267"
+        ];
+    } else {
+        colors = [ // pastel colors
+            "#97ebdd", "#ddb5dc", "#cfeaaf", "#74aff3", "#e9c59a",
+            "#5ecee9", "#eab4b5", "#98cea5", "#bcb8ec", "#bdc08c",
+            "#92bde8", "#dae9d3", "#7ecac7", "#b3cee3", "#b1beaf"
+        ];
     }
-    else if(document.body.classList.contains('light-theme')) {
-        document.getElementById('thememode_toggle').innerHTML = '<i class="fa fa-moon-o" aria-hidden="true"></i>&nbsp;<i class="fa fa-toggle-off" aria-hidden="true"></i>';
-    }
-    document.body.classList.toggle('light-theme', light_theme);
+    // randomize colors, then add 'extra' colors by duplicating the array and adding it to the end
+    colors = colors.map(value => ({ value, sort: Math.random() })).sort((a, b) => a.sort - b.sort).map(({ value }) => value);
+    return colors.concat(colors);
 }
