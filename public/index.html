@@ -8,40 +8,37 @@
         <title>TAMU Grade Distribution</title>
 
         <!--css and fonts-->
-        <link href="/css/bundle.min.css?v=1.0" rel="stylesheet" type="text/css">
-        <link href="/css/fonts.min.css?v=1.0" rel="stylesheet" type="text/css">
-        <link href="/css/common.min.css?v=1.0" rel="stylesheet" type="text/css">
-        <link href="/css/main.min.css?v=1.0" rel="stylesheet" type="text/css">
-        
-        <!--js-->
-        <script async src="https://www.googletagmanager.com/gtag/js?id=G-HS51DZ5HEM"></script>
-        <script src="/scripts/bundle.js?v=1.0"></script>
-        <script src="/scripts/main.min.js?v=1.0"></script>
+        <link rel="stylesheet" href="/css/bundle.min.css">
+        <link rel="stylesheet" href="/css/fonts.min.css">
+        <link rel="stylesheet" href="/css/common.min.css">
+        <link rel="stylesheet" href="/css/main.min.css">
+        <script src="https://www.googletagmanager.com/gtag/js?id=G-HS51DZ5HEM" async></script>
+        <script src="/scripts/bundle.min.js"></script>
+        <script src="/scripts/common.min.js"></script>
+        <script src="/scripts/main.min.js"></script>
 
         <!--favicons-->
-        <link rel="apple-touch-icon" sizes="180x180" href="/images/favicons/apple-touch-icon.png?v=1.0">
-        <link rel="icon" type="image/png" sizes="32x32" href="/images/favicons/favicon-32x32.png?v=1.0">
-        <link rel="icon" type="image/png" sizes="16x16" href="/images/favicons/favicon-16x16.png?v=1.0">
-        <link rel="manifest" href="/images/favicons/site.webmanifest?v=1.0">
-        <link rel="mask-icon" href="/images/favicons/safari-pinned-tab.svg?v=1.0" color="#5BBAD5">
-        <link rel="shortcut icon" href="/images/favicons/favicon.ico?v=1.0">
+        <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+        <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png">
+        <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.png">
+        <link rel="manifest" href="/images/site.webmanifest">
+        <link rel="mask-icon" href="/images/safari-pinned-tab.svg" color="#5BBAD5">
+        <link rel="shortcut icon" href="/images/favicon.ico">
         <meta name="msapplication-TileColor" content="#00A300">
-        <meta name="msapplication-config" content="/images/favicons/browserconfig.xml?v=1.0">
+        <meta name="msapplication-config" content="/images/browserconfig.xml">
     </head>
 
     <body>
-        <!--flex wrapper-->
+        <!--flex-wrapper-->
         <div class="flex-wrapper">
             <!--header-->
             <div class="header-container">
                 <div class="toggle-switch" id='thememode_toggle'>
-                    <i class="fa fa-moon-o" aria-hidden="true"></i>&nbsp;<i class="fa fa-toggle-off" aria-hidden="true"></i>
+                    <i class="fa fa-moon-o" aria-hidden="true"></i>
                 </div>
                 <div class="header-bar">
-                    <div class="header-logo-container">
-                        <div class="header-logo" id="home_link1">
-                            <img id="favicon1" src="/images/img/tamugd-logo.svg?v=1.0" alt='TAMUGD Logo'>
-                        </div>
+                    <div class="header-logo">
+                        <img id="header_favicon" src="/images/tamugd-logo.svg" alt='TAMUGD Logo'>
                     </div>
                     <div class="header-text">
                         <h1>TAMU Grade Distribution</h1>
@@ -53,34 +50,26 @@
             <div class="main-container">
                 <noscript>This website requires a JavaScript enabled or supported browser.</noscript>
 
+                <div class="notification-banner-container hidden">
+                    The database is currently under maintenance. Reports will be incomplete for a bit.
+                </div>
+
                 <div class="search-layout-container">
                     <div class="search-container">
                         <div class="inner-search-container">
-                            <table>
-                                <tr>
-                                    <form onsubmit="return false">
-                                        <td>&nbsp;&nbsp;</td>
-                                        <td>Department:&nbsp;</td>
-                                        <td>
-                                            <select id="department-select" class="chosen-select" tabindex="0" required></select>
-                                        </td>
-                                        <td>&nbsp;&nbsp;</td>
-                                        <td>Course:&nbsp;</td>
-                                        <td>
-                                            <div id="course_select_chosen" class="chosen-container chosen-container-single" title="">
-                                                <input id="course-field" class="chosen-single" type="text" placeholder="EX: 229" tabindex="0" required>
-                                            </div>
-                                        </td>
-                                        <td></td>
-                                        <td>
-                                            <button id="search-button" class="search-button" type="submit" alt="Search" tabindex="0" onclick="getCourseData();">
-                                                <i class="fa fa-search fa-lg color-white" title="Search"></i>
-                                            </button>
-                                        </td>
-                                        <td>&nbsp;&nbsp;</td>
-                                    </form>
-                                </tr>
-                            </table>
+                            <h3>Department:</h3>
+                            <select id="department_select" class="chosen-select" tabindex="0" required>
+                                <option label="NULL"></option>
+                            </select>
+                            <h3>Course:</h3>
+                            <div id="course_select" class="chosen-container-single">
+                                <input id="course_field" class="chosen-single" type="text" placeholder="EX: 229" tabindex="0" required>
+                            </div>
+                            <div class="search-button-container">
+                                <button id="search_button" type="submit" name="Search" tabindex="0">
+                                    <i class="fa fa-search fa-lg color-white" title="Search"></i>
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -88,18 +77,18 @@
                 <div class="plot-layout-container">
                     <div class="plot-container">
                         <div class="inner-plot-container">
-                            <canvas id="gpaChartCanvas" aria-label="AVG Professor GPA Chart" role="img"></canvas>
+                            <canvas id="gpa_chart_canvas" aria-label="AVG Professor GPA Chart" role="img"></canvas>
                         </div>
                     </div>
 
                     <div class="settings-container">
                         <div class="professor-semester-container">
                             <div class="professor-select-container">
-                                <select id="professor-select" class="chosen-select" data-placeholder="Search for a course to begin" tabindex="0" multiple></select>
+                                <select id="professor_select" class="chosen-select" data-placeholder="Search for a course to begin" tabindex="0" multiple></select>
                             </div>
                             <div>&nbsp;</div>
                             <div class="semester-select-container">
-                                <select id="semester-select" class="chosen-select" data-placeholder="Click here to select semesters" tabindex="0" multiple>
+                                <select id="semester_select" class="chosen-select" data-placeholder="Click here to select semesters" tabindex="0" multiple>
                                     <option value="SPRING" selected>Spring</option>
                                     <option value="SUMMER">Summer</option>
                                     <option value="FALL" selected>Fall</option>
@@ -108,59 +97,56 @@
                         </div>
                         <div class="options-container">
                             <div class="inner-options-header-container">
-                                Options:
+                                <h2>Options:</h2>
                             </div>
                             <div class="inner-options-input-container">
-                                <select id="honors-select" class="chosen-select" tabindex="0">
+                                <select id="honors_select" class="chosen-select" tabindex="0">
                                     <option value="EXHONORS" selected>Exclude Honors</option>
                                     <option value="INHONORS">Include Honors</option>
                                     <option value="ONHONORS">Honors Only</option>
                                 </select>
-                                &nbsp;
-                                <button id="regenerate-gpa-plot-colors-button" class="regenerate-gpa-plot-colors-button" type="text" alt="Generate New Plot Colors" tabindex="0" onclick="regenGPAPlotChartColors();">
+                                <button id="new_chart_colors_button" class="regenerate-gpa-plot-colors-button" type="button" name="Generate New Plot Colors" tabindex="0">
                                     &nbsp;<i class="fa fa-refresh" title="Generate New Plot Colors"></i>&nbsp;&nbsp;New Plot Colors&nbsp;
                                 </button>
-                                &nbsp;
-                                <button id="toggle-raw-data-button" class="toggle-raw-data-button" type="text" alt="Toggle Raw Data" tabindex="0" onclick="toggleRawData();">
+                                <button id="toggle_raw_data_button" class="toggle-raw-data-button" type="button" name="Toggle Raw Data" tabindex="0">
                                     &nbsp;<i class="fa fa-caret-square-o-up" title="Display Raw Data"></i>&nbsp;&nbsp;Display Raw Data&nbsp;
                                 </button>
                             </div>
                         </div>
                         <div class="year-container">
                             <div class="inner-year-container">
-                                    <input id='year-range' type="hidden" class="slider-input" value="0,9999999">
+                                <input id='year_range' type="hidden" class="slider-input" value="0,9999999">
                             </div>
                         </div>
                     </div>
                 </div>
-                
+
                 <div class="course-stats-layout-container">
                     <div class="course-stats-container">
-                        <div class=course-stats-gpa-container>
-                            <canvas id="courseGpaChartCanvas" aria-label="Course GPA Range Chart" role="img"></canvas>
+                        <div class=course-range-chart-container>
+                            <canvas id="course_range_chart_canvas" aria-label="Course GPA Range Chart" role="img"></canvas>
                         </div>
                         <div class=course-stats-letter-container>
-                            <canvas id="courseLetterChartCanvas" aria-label="Course Letter Distribution Chart" role="img"></canvas>
+                            <canvas id="course_letter_chart_canvas" aria-label="Course Letter Distribution Chart" role="img"></canvas>
                         </div>
-                        <div class=course-stats-overalldiff-container>
-                            <canvas id="courseOveralldiffChartCanvas" aria-label="Course Difficulty Chart" role="img"></canvas>
+                        <div class=course-stats-difficulty-container>
+                            <canvas id="course_difficulty_chart_canvas" aria-label="Course Difficulty Chart" role="img"></canvas>
                         </div>
                     </div>
                 </div>
 
-                <div class="raw-data-layout-container" id="raw-data-layout-container">
+                <div id="raw_data_layout_container" class="raw-data-layout-container">
                     <div class="raw-data-container">
                         <div class="inner-raw-data-container">
-                            <div id="raw-data-table-container"></div>
+                            <div id="raw_data_table_container"></div>
                         </div>
                     </div>
+                    <div id="back_to_top" class="back-to-top"><i class="fa fa-arrow-up fa-lg" title="Scroll to top"></i></div>
                 </div>
             </div>
 
-
             <!--footer-->
             <div class="footer-container">
-                <div class="footer-spacer"></div>
                 <div class="footer-bar">
                     <div class="footer-left">
                         <div class="footer-subtext-left">
@@ -169,16 +155,14 @@
                         </div>
                     </div>
 
-                    <div class="footer-logo-container">
-                        <div class="footer-logo" id="home_link2">
-                            <img id="favicon2" src="images/img/tamugd-logo.svg?v=1.0" alt='TAMUGD Logo'>
-                        </div>
+                    <div class="footer-logo">
+                        <img id="footer_favicon" src="/images/tamugd-logo.svg" alt='TAMUGD Logo'>
                     </div>
 
                     <div class="footer-right">
                         <div class="footer-subtext-right">
-                            <p><i class="fa fa-github fa-lg" title="Github logo"></i><span class="color-standard"><a href="https://github.com/adibarra"> @adibarra</a></span></p>
-                            <p><i class="fa fa-github fa-lg" title="Github logo"></i><span class="color-standard"><a href="https://github.com/thestarch2"> @thestarch2</a></span></p>
+                            <p><i class="fa fa-github fa-lg" title="Github logo"></i><span class="color-standard"> @<a href="https://github.com/adibarra">adibarra</a></span></p>
+                            <p><i class="fa fa-github fa-lg" title="Github logo"></i><span class="color-standard"> @<a href="https://github.com/thestarch2">thestarch2</a></span></p>
                         </div>
                     </div>
                 </div>
