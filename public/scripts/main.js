@@ -1,22 +1,22 @@
-var allDepartments = [];
-var allYears = [];
-var responseCache = [];
-var courseDataAll = [];
-var courseData = [];
-var courseProfs = [];
-var courseDataGrid;
-var courseGPAChart;
-var courseGPAChartPlaceholderDataset;
-var courseRangeChart;
-var courseLetterChart;
-var courseDiffChart;
+let allDepartments = [];
+let allYears = [];
+let responseCache = [];
+let courseDataAll = [];
+let courseData = [];
+let courseProfs = [];
+let courseDataGrid;
+let courseGPAChart;
+let courseGPAChartPlaceholderDataset;
+let courseRangeChart;
+let courseLetterChart;
+let courseDiffChart;
 const skipped = (ctx, value) => ctx.p0.skip || ctx.p1.skip ? value : undefined;
 
 document.addEventListener('DOMContentLoaded', () => {
     $("#raw_data_layout_container").hide();
 
     $("#department_select").chosen({ width: "100%" });
-    $("#professor_select").chosen({ width: "100%", max_selected_options: 0, disable_search_threshold: 10, hide_results_on_select:false });
+    $("#professor_select").chosen({ width: "100%", max_selected_options: 0, disable_search_threshold: 10, hide_results_on_select: false });
     $("#semester_select").chosen({ width: "100%", max_selected_options: 3, disable_search: true });
     $("#honors_select").chosen({ width: "150px", disable_search: true });
 
@@ -42,7 +42,7 @@ document.addEventListener('DOMContentLoaded', () => {
         position: 'bottom', width: $("#course_difficulty_chart_canvas").width(), tooltipHover: true,
         titleBackground: 'rgba(102,102,102,.66)', background: 'rgba(102,102,102,.66)', titleContent: 'How to interpret:',
         content: 'This chart takes a few of the statistics for the course and plugs them into the following'
-        +' <span class="color-black">'
+        +' <span class="color-white">'
         +'<a href="https://github.com/TAMU-GradeDistribution/TAMU-GradeDistribution-Website/blob/main/public/scripts/main.js#L875">'
         +' formula</a></span> to determine a relative difficulty score for each course.',
     });
@@ -98,7 +98,7 @@ document.addEventListener('DOMContentLoaded', () => {
             responsive: true,
             maintainAspectRatio: false,
             indexAxis: 'y',
-            scales: { x: { ticks: { suggestedMin: 0.0, suggestedMax: 4.0, min: 0.0, max: 4.0, }, stacked: true }, y: { stacked: true } },
+            scales: { x: { ticks: { suggestedMin: 0.0, suggestedMax: 4.0, min: 0.0, max: 4.0 }, stacked: true }, y: { stacked: true } },
             plugins: {
                 title: { display: true, text: 'Course GPA Range' },
                 legend: { display: false },
@@ -143,8 +143,8 @@ document.addEventListener('DOMContentLoaded', () => {
         data: {
             labels: [''],
             datasets: [
-                { label: 'Difficulty', data: [6], backgroundColor: 'rgba(247,194,14,.66)', borderWidth: 1, },
-                { label: '', data: [4], backgroundColor: 'rgba(102,102,102,.66)', borderWidth: 1, }
+                { label: 'Difficulty', data: [6], backgroundColor: 'rgba(247,194,14,.66)', borderWidth: 1 },
+                { label: '', data: [4], backgroundColor: 'rgba(102,102,102,.66)', borderWidth: 1 }
             ]
         },
         options: {
@@ -192,11 +192,9 @@ function getSupportedData() {
 
 // get data for selected course
 function getCourseData() {
-    let department = $("#department_select").val();
-    let course = $("#course_field").val();
-    if (department === '' || course === '') { return; }
+    if ($("#department_select").val() === '' || $("#course_field").val() === '') { return; }
 
-    let searchButton = $("#search_button").html();
+    const searchButton = $("#search_button").html();
     $("#search_button").html('<i class="fa fa-refresh fa-spin" title="Loading..."></i>');
     requestSearch(department, course)
     .catch((err) => { alert(err); })
@@ -245,7 +243,7 @@ function requestSearch(department, course) {
         setTimeout(() => { reject('Server error ([/search] timed out). Try again in a bit.'); return; }, 5000);
         department = department.toUpperCase();
         course = course.toUpperCase();
-        let query = 'search?d='+department+'&c='+course;
+        const query = 'search?d='+department+'&c='+course;
 
         for (let i = 0; i < responseCache.length; i++) {
             if (responseCache[i].query === query) {
@@ -277,9 +275,9 @@ function requestSearch(department, course) {
 
 // refilter and update data based on new selections
 function filterCourseData() {
-    let selectedYears = interpolateNumArray($('#year_range').val().split(','), 1);
-    let selectedSemesters = ($("#semester_select").chosen().val()+'').split(',').map((value) => { return value.toUpperCase(); });
-    let selectedHonors = $("#honors_select").chosen().val().toUpperCase();
+    const selectedYears = interpolateNumArray($('#year_range').val().split(','), 1);
+    const selectedSemesters = ($("#semester_select").chosen().val()+'').split(',').map((value) => { return value.toUpperCase(); });
+    const selectedHonors = $("#honors_select").chosen().val().toUpperCase();
 
     // deep copy courseDataAll into courseData
     courseData = JSON.parse(JSON.stringify(courseDataAll));
@@ -293,9 +291,7 @@ function filterCourseData() {
 
 // update all data used by ui
 function updateSelection() {
-    var department = $("#department_select").val();
-    var course = $("#course_field").val();
-    if (department === '' || course === '') { return; }
+    if ($("#department_select").val() === '' || $("#course_field").val() === '') { return; }
 
     filterCourseData();
     
@@ -326,7 +322,7 @@ function updateSelection() {
 function getGPAChartLabels(years, semesters) {
     if (!years) years = $('#year_range').val().split(',');
     if (!semesters) semesters = $("#semester_select").chosen().val();
-    let labels = []
+    const labels = []
     years = interpolateNumArray(years, 1);
     for (let i = 0; i < years.length; i++) {
         for (let j = 0; j < semesters.length; j++) {
@@ -365,15 +361,14 @@ function autoPopulateProfs() {
     updateSelection();
 }
 
-// FIXME: remake this unoptimized mess
 // generate datasets to use in courseGPAChart
 function getGPAChartDataset(callback) {
-    let years = interpolateNumArray(($('#year_range').val()+'').split(','),1);
-    let semesters = $("#semester_select").chosen().val();
-    let professors = $("#professor_select").chosen().val();
+    const years = interpolateNumArray(($('#year_range').val()+'').split(','),1);
+    const semesters = $("#semester_select").chosen().val();
+    const professors = $("#professor_select").chosen().val();
 
-    let profWeightedGPA = new Array(professors.length);
-    let profNumStudents = new Array(professors.length);
+    const profWeightedGPA = new Array(professors.length);
+    const profNumStudents = new Array(professors.length);
 
     for (let i = 0; i < profWeightedGPA.length; i++) {
         profWeightedGPA[i] = new Array(years.length*semesters.length).fill(0);
@@ -382,12 +377,12 @@ function getGPAChartDataset(callback) {
 
     for (let j = 0; j < courseData.length; j++) {
         for (let k = 0; k < years.length*semesters.length; k++) {
-            let tmp1 = Math.floor(k/semesters.length)%years.length;
-            let tmp2 = Math.floor(k%semesters.length);
+            const tmp1 = Math.floor(k/semesters.length)%years.length;
+            const tmp2 = Math.floor(k%semesters.length);
             if (courseData[j].year === Number(years[tmp1]) && courseData[j].semester === semesters[tmp2].toUpperCase()) {
-                let prof = professors.indexOf(courseData[j].professorName);
+                const prof = professors.indexOf(courseData[j].professorName);
                 if (prof != -1) {
-                    let sectionNumStudents = Number(courseData[j].numA)+Number(courseData[j].numB)+Number(courseData[j].numC)+Number(courseData[j].numD)+Number(courseData[j].numF);
+                    const sectionNumStudents = Number(courseData[j].numA)+Number(courseData[j].numB)+Number(courseData[j].numC)+Number(courseData[j].numD)+Number(courseData[j].numF);
                     profWeightedGPA[prof][k] += (Number(courseData[j].avgGPA) * Number(sectionNumStudents));
                     profNumStudents[prof][k] += Number(sectionNumStudents);
                 }
@@ -401,8 +396,8 @@ function getGPAChartDataset(callback) {
         }
     }
 
-    let colors = getColors();
-    let dataset = [];
+    const colors = getColors();
+    const dataset = [];
     for (let i = 0; i < profWeightedGPA.length; i++) {
         dataset.push({
             label: professors[i], data: profWeightedGPA[i], fill: false, borderColor: colors[i],
@@ -415,16 +410,16 @@ function getGPAChartDataset(callback) {
 
 // generate datasets to use in courseRangeChart
 function getGPARangeChartDataset(callback) {
-    let labels = ['','GPA Low: ','GPA Avg: ','GPA High: ','']
-    let bgColors = ['rgba(102,102,102,0.66)','rgba(247,194,14,0.66)','rgba(128,149,7,0.66)','rgba(247,194,14,0.66)','rgba(102,102,102,0.66)']
-    let gpaRange = new Array(labels.length).fill(0);
+    const labels = ['','GPA Low: ','GPA Avg: ','GPA High: ','']
+    const bgColors = ['rgba(102,102,102,.66)','rgba(247,194,14,.66)','rgba(128,149,7,.66)','rgba(247,194,14,.66)','rgba(102,102,102,.66)']
+    const gpaRange = new Array(labels.length).fill(0);
     let gpaMin = 4;
     let gpaMax = 0;
     let gpaAvg = 0;
 
     let count = 0;
     for (let i = 0; i < courseData.length; i++) {
-        let num = Number(courseData[i]['avgGPA']);
+        const num = Number(courseData[i].avgGPA);
         gpaAvg += num;
         count += 1;
 
@@ -457,25 +452,25 @@ function getGPARangeChartDataset(callback) {
 
 // generate datasets to use in courseLetterChart
 function getLetterChartDataset(callback) {
-    let labels = ['A','B','C','D','F','Q']
-    let bgColors = ['rgba(128,149,7,0.66)','rgba(175,166,5,0.66)','rgba(247,194,14,0.66)','rgba(250,45,8,0.66)','rgba(211,15,2,0.66)','rgba(102,102,102,0.66)']
-    let avgLetterGrade = new Array(labels.length).fill(0);
+    const labels = ['A','B','C','D','F','Q']
+    const bgColors = ['rgba(128,149,7,.66)','rgba(175,166,5,.66)','rgba(247,194,14,.66)','rgba(250,45,8,.66)','rgba(211,15,2,.66)','rgba(102,102,102,.66)']
+    const avgLetterGrade = new Array(labels.length).fill(0);
 
     for (let i = 0; i < courseData.length; i++) {
-        avgLetterGrade[0] += Number(courseData[i]['numA']);
-        avgLetterGrade[1] += Number(courseData[i]['numB']);
-        avgLetterGrade[2] += Number(courseData[i]['numC']);
-        avgLetterGrade[3] += Number(courseData[i]['numD']);
-        avgLetterGrade[4] += Number(courseData[i]['numF']);
-        avgLetterGrade[5] += Number(courseData[i]['numQ']);
+        avgLetterGrade[0] += Number(courseData[i].numA);
+        avgLetterGrade[1] += Number(courseData[i].numB);
+        avgLetterGrade[2] += Number(courseData[i].numC);
+        avgLetterGrade[3] += Number(courseData[i].numD);
+        avgLetterGrade[4] += Number(courseData[i].numF);
+        avgLetterGrade[5] += Number(courseData[i].numQ);
     }
-    let count = avgLetterGrade[0]+avgLetterGrade[1]+avgLetterGrade[2]+avgLetterGrade[3]+avgLetterGrade[4]+avgLetterGrade[5];
+    const count = avgLetterGrade[0]+avgLetterGrade[1]+avgLetterGrade[2]+avgLetterGrade[3]+avgLetterGrade[4]+avgLetterGrade[5];
     for (let i = 0; i < avgLetterGrade.length; i++) {
         // can't use 100 because sometimes charts.js expands the chart to 120%
         avgLetterGrade[i] = (avgLetterGrade[i]/count)*99.999999;
     }
 
-    dataset = [];
+    const dataset = [];
     for (let i = 0; i < avgLetterGrade.length; i++) {
         dataset.push({
             label: labels[i],
@@ -489,41 +484,41 @@ function getLetterChartDataset(callback) {
 
 // generate datasets to use in courseDiffChart
 function getCourseDifficultyChartDataset(callback) {
-    let years = interpolateNumArray(($('#year_range').val()+'').split(','),1);
-    let semesters = $("#semester_select").chosen().val();
-    let honors = $("#honors_select").chosen().val();
+    const years = interpolateNumArray(($('#year_range').val()+'').split(','),1);
+    const semesters = $("#semester_select").chosen().val();
+    const honors = $("#honors_select").chosen().val();
 
-    let bgColors = ['rgba(128,149,7,0.66)','rgba(175,166,5,0.66)','rgba(247,194,14,0.66)','rgba(250,45,8,0.66)','rgba(211,15,2,0.66)']
+    const bgColors = ['rgba(128,149,7,.66)','rgba(175,166,5,.66)','rgba(247,194,14,.66)','rgba(250,45,8,.66)','rgba(211,15,2,.66)']
+    const profs = [];
     let minGPA = 4;
     let avgGPA = 0;
     let count = 0;
     let numStudentsPass = 0;
     let numStudentsFail = 0;
     let courseDiff = 0;
-    let profs = []
 
     for (let i = 0; i < courseDataAll.length; i++) {
-        if (years.includes(courseDataAll[i]['year']) && semesters.includes(courseDataAll[i]['semester']) && honorsFilter(honors,courseDataAll[i]['honors'])) {
-            avgGPA += Number(courseDataAll[i]['avgGPA']);
+        if (years.includes(courseDataAll[i].year) && semesters.includes(courseDataAll[i].semester) && honorsFilter(honors,courseDataAll[i].honors)) {
+            avgGPA += Number(courseDataAll[i].avgGPA);
             count += 1;
 
-            numStudentsPass += Number(courseDataAll[i]['numA']);
-            numStudentsPass += Number(courseDataAll[i]['numB']);
-            numStudentsPass += Number(courseDataAll[i]['numC']);
-            numStudentsFail += Number(courseDataAll[i]['numD']);
-            numStudentsFail += Number(courseDataAll[i]['numF']);
-            numStudentsFail += Number(courseDataAll[i]['numI']);
-            numStudentsFail += Number(courseDataAll[i]['numS']);
-            numStudentsFail += Number(courseDataAll[i]['numU']);
-            numStudentsFail += Number(courseDataAll[i]['numQ']);
-            numStudentsFail += Number(courseDataAll[i]['numX']);
+            numStudentsPass += Number(courseDataAll[i].numA);
+            numStudentsPass += Number(courseDataAll[i].numB);
+            numStudentsPass += Number(courseDataAll[i].numC);
+            numStudentsFail += Number(courseDataAll[i].numD);
+            numStudentsFail += Number(courseDataAll[i].numF);
+            numStudentsFail += Number(courseDataAll[i].numI);
+            numStudentsFail += Number(courseDataAll[i].numS);
+            numStudentsFail += Number(courseDataAll[i].numU);
+            numStudentsFail += Number(courseDataAll[i].numQ);
+            numStudentsFail += Number(courseDataAll[i].numX);
 
-            if (!profs.includes(courseDataAll[i]['professorName'])) {
-                profs.push(courseDataAll[i]['professorName']);
+            if (!profs.includes(courseDataAll[i].professorName)) {
+                profs.push(courseDataAll[i].professorName);
             }
 
-            if (minGPA > Number(courseDataAll[i]['avgGPA'])) {
-                minGPA = Number(courseDataAll[i]['avgGPA']);
+            if (minGPA > Number(courseDataAll[i].avgGPA)) {
+                minGPA = Number(courseDataAll[i].avgGPA);
             }
         }
     }
@@ -542,7 +537,7 @@ function getCourseDifficultyChartDataset(callback) {
     if (minGPA < 2.50) courseDiff += 1; // minGPA < 2.5
     if (minGPA < 2.00) courseDiff += 1; // minGPA < 2.0
 
-    dataset = [];
+    const dataset = [];
     dataset.push({
         label: 'Difficulty',
         data: [courseDiff],
@@ -552,7 +547,7 @@ function getCourseDifficultyChartDataset(callback) {
     dataset.push({
         label: '',
         data: [10-courseDiff],
-        backgroundColor: 'rgba(102,102,102,0.66)',
+        backgroundColor: 'rgba(102,102,102,.66)',
         borderWidth: 1,
     });
     return callback(dataset);
@@ -560,7 +555,7 @@ function getCourseDifficultyChartDataset(callback) {
 
 // generate dataset to use in courseDataGrid
 function getCourseDataGridDataset() {
-    let selectedProfessors = ($("#professor_select").chosen().val()+'').split(',').map((value) => { return value.toUpperCase(); });
+    const selectedProfessors = ($("#professor_select").chosen().val()+'').split(',').map((value) => { return value.toUpperCase(); });
     // deep copy courseData into courseDataGridDataset
     let courseDataGridDataset = JSON.parse(JSON.stringify(courseData));
     // for each element in courseDataGridDataset translate element.honors to a string
@@ -610,15 +605,17 @@ function regenGPAChartColors() {
 
 // check if honors courses are selected
 function honorsFilter(selectedHonors, isHonors) {
-    if (selectedHonors === "INHONORS") return true;
-    if (selectedHonors === "EXHONORS") return !Boolean(isHonors);
-    if (selectedHonors === "ONHONORS") return Boolean(isHonors);
-    return false;
+    switch(selectedHonors) {
+        case ("INHONORS"): return true;
+        case ("EXHONORS"): return !Boolean(isHonors);
+        case ("ONHONORS"): return Boolean(isHonors);
+        default: return false;
+    }
 }
 
 // expands [2017,2021] into [2017,2018,2019,2020,2021]
 function interpolateNumArray(numArray, stepsize) {
-    let newArray = [Number(numArray[0])];
+    const newArray = [Number(numArray[0])];
     while (newArray[newArray.length-1] < Number(numArray[numArray.length-1])) { newArray.push(newArray[newArray.length-1] + stepsize); }
     return newArray;
 };
