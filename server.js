@@ -29,7 +29,12 @@ app.use(helmet({
 
 app.use((req, res, next) => {
     //res.set('Cache-Control', 'public, max-age=86400');
-    if (req.get('Referrer')) console.log('['+(req.ip)+'] [Referrer: '+req.get('Referrer')+']');
+    if (req.get('Referrer')) {
+        let now = new Date();
+        let date = now.getFullYear()+'-'+('0'+(now.getMonth()+1)).slice(-2)+'-'+('0'+now.getDate()).slice(-2);
+        let time = ('0'+now.getHours()).slice(-2)+':'+('0'+now.getMinutes()).slice(-2)+'.'+('0'+now.getSeconds()).slice(-2);
+        console.log('['+date+'::'+time+'] ['+(req.ip)+'] [Referrer: '+req.get('Referrer')+']');
+    }
     next();
 });
 
