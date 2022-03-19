@@ -192,7 +192,9 @@ function getSupportedData() {
 
 // get data for selected course
 function getCourseData() {
-    if ($("#department_select").val() === '' || $("#course_field").val() === '') { return; }
+    const department = $("#department_select").val();
+    const course = $("#course_field").val();
+    if (department === '' || course === '') { return; }
 
     const searchButton = $("#search_button").html();
     $("#search_button").html('<i class="fa fa-refresh fa-spin" title="Loading..."></i>');
