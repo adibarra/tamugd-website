@@ -11,7 +11,7 @@ This project is dedicated to helping analyze the massive amounts of data release
 - Presents multiple *useful* forms of analysis for course data
 
 ## TODO:
-- Automatically update the database when new data is released
+- [ ] Automatically update the database when new data is released
 
 ## How to use:
 1. Run [TAMU-GradeDistribution-ParserV2](https://github.com/TAMU-GradeDistribution/TAMU-GradeDistribution-ParserV2) to generate necessary database table
