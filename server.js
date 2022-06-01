@@ -2,8 +2,7 @@ const express = require('express');
 const helmet = require('helmet');
 const compression = require('compression')
 const mysql = require('mysql2');
-const mysqlConfig = require('./mysql_config.js');
-const serverConfig = require('./server_config.js').serverConfig;
+const config = require('./tamugd_config.js');
 
 const app = express();
 let responseCache = {};
@@ -11,11 +10,11 @@ let syncing = false;
 let syncPercentage = '0';
 
 function checkSyncStatus() {
-    const conn = mysql.createConnection(mysqlConfig.databaseSettings);
+    const conn = mysql.createConnection(config.databaseSettings);
     conn.connect((err) => {
         if (err) { console.log(err.toString); res.write('Backend Error', () => { res.end(); conn.end(); }); }
         else {
-            conn.query('SELECT * FROM '+mysqlConfig.statusTable+';', (err, result) => {
+            conn.query('SELECT * FROM '+config.statusTable+';', (err, result) => {
                 if (!err) {
                     if (result && result.length >= 2) {
                         syncing = result[0].value;
@@ -69,12 +68,12 @@ app.get('/supported', (req, res) => {
         res.status(200).json(responseCache['supported']).end();
         console.log(`[${date}.${time}] [${req.ip}] [SUCCESS (Cached)] [GET ${req.url}]`);
     } else {
-        const conn = mysql.createConnection(mysqlConfig.databaseSettings);
+        const conn = mysql.createConnection(config.databaseSettings);
         conn.connect((err) => {
             if (err) { console.log(err.toString); res.write('Backend Error', () => { res.end(); conn.end(); }); }
-            else conn.query(`SELECT DISTINCT year FROM ${mysqlConfig.gradesTable};`, (err, result1) => {
+            else conn.query(`SELECT DISTINCT year FROM ${config.gradesTable};`, (err, result1) => {
                 if (err) { console.log(err.toString); res.write('Backend Error', () => { res.end(); conn.end(); }); }
-                else conn.query(`SELECT DISTINCT departmentName FROM ${mysqlConfig.gradesTable};`, (err, result2) => {
+                else conn.query(`SELECT DISTINCT departmentName FROM ${config.gradesTable};`, (err, result2) => {
                     if (err) { console.log(err.toString); res.write('Backend Error', () => res.end()); }
                     else {
                         responseCache['supported'] = {
@@ -106,9 +105,9 @@ app.get('/search', (req, res) => {
         res.status(200).json(responseCache[queryString]).end();
         console.log(`[${date}.${time}] [${req.ip}] [SUCCESS (Cached)] [GET ${req.url}]`);
     } else {
-        const conn = mysql.createConnection(mysqlConfig.databaseSettings);
+        const conn = mysql.createConnection(config.databaseSettings);
         const sqlQuery = (`SELECT year,semester,professorName,section,honors,avgGPA,numA,numB,numC,numD,numF,numI,numS,numU,numQ,numX FROM 
-            ${mysqlConfig.gradesTable} WHERE (departmentName=${dep}) AND (course=${course});`);
+            ${config.gradesTable} WHERE (departmentName=${dep}) AND (course=${course});`);
         conn.connect((err) => {
             if (err) { console.log(err.toString); res.write('Backend Error', () => { res.end(); conn.end(); }); }
             else conn.query(sqlQuery, (err, result) => {
@@ -126,7 +125,7 @@ app.get('/search', (req, res) => {
 
 app.use((req, res) => res.status(404).sendFile('public/404.html', { root: __dirname }));
 
-app.listen(serverConfig.port, () => console.log(`Server running on port: ${serverConfig.port}`));
+app.listen(config.port, () => console.log(`Server running on port: ${config.port}`));
 
 process.on('SIGINT', () => {
     console.log('\nGracefully shutting down from SIGINT (Ctrl-C)');
