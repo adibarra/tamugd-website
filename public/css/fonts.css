@@ -79,6 +79,10 @@
     content: "\f186"
 }
 
+.fa-gear-o:before {
+    content: "\f013"
+}
+
 .fa-spin {
     -webkit-animation: fa-spin 2s infinite linear;
     animation: fa-spin 2s infinite linear;
