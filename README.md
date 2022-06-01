@@ -3,19 +3,15 @@ This project is dedicated to helping analyze the massive amounts of data release
 
 ---
 
-## Design goals:
- - Present a sleek, intuitive, non-cramped interface
- - Fully responsive site for desktop and mobile
- - Presents multiple *useful* forms of analysis for course data
+## Features:
+- Blazing fast loading times
+- Server and client side caching
+- Fully responsive design for desktop and mobile
+- Presents a sleek, intuitive, and non-cramped interface
+- Presents multiple *useful* forms of analysis for course data
 
-## Roadmap:
-- [x] <s>rewrite server with expressjs</s>
-- [x] <s>http header hardening with helmetjs</s>
-- [x] <s>responsive layout for desktop/mobile</s>
-- [x] <s>add a dark theme and toggle switch</s>
-- [x] <s>fully redo and optimize theming and css</s>
-- [x] <s>optimize site loading time</s>
-- [ ] optimize site javascript
+## TODO:
+- Automatically update the database when new data is released
 
 ## How to use:
 1. Run [TAMU-GradeDistribution-ParserV2](https://github.com/TAMU-GradeDistribution/TAMU-GradeDistribution-ParserV2) to generate necessary database table
