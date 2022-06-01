@@ -5,10 +5,30 @@ const mysql = require('mysql2');
 const mysqlConfig = require('./mysql_config.js');
 const serverConfig = require('./server_config.js').serverConfig;
 
-// cached responses
-const responseCache = [];
+const app = express();
+let responseCache = {};
+let syncing = false;
+let syncPercentage = '0';
 
-var app = express();
+function checkSyncStatus() {
+    const conn = mysql.createConnection(mysqlConfig.databaseSettings);
+    conn.connect((err) => {
+        if (err) { console.log(err.toString); res.write('Backend Error', () => { res.end(); conn.end(); }); }
+        else {
+            conn.query('SELECT * FROM '+mysqlConfig.statusTable+';', (err, result) => {
+                if (!err) {
+                    if (result && result.length >= 2) {
+                        syncing = result[0].value;
+                        syncPercentage = result[1].value;
+                    }
+                }
+                conn.end();
+            });
+        }
+    });
+    if (syncing) responseCache = {};
+}
+
 app.set('trust proxy', 1);
 app.use(compression());
 
@@ -28,85 +48,87 @@ app.use(helmet({
 }));
 
 app.use((req, res, next) => {
-    //res.set('Cache-Control', 'public, max-age=86400');
-    if (req.get('Referrer')) {
-        let now = new Date();
-        let date = now.getFullYear()+'-'+('0'+(now.getMonth()+1)).slice(-2)+'-'+('0'+now.getDate()).slice(-2);
-        let time = ('0'+now.getHours()).slice(-2)+':'+('0'+now.getMinutes()).slice(-2)+'.'+('0'+now.getSeconds()).slice(-2);
-        console.log('['+date+'::'+time+'] ['+(req.ip)+'] [Referrer: '+req.get('Referrer')+']');
-    }
+    if (req.get('Referrer')) console.log(`[${req.ip}] [Referrer: ${req.get('Referrer')}]`);
     next();
 });
 
 app.use(express.static('public'));
 
-app.get('/favicon.ico', (req, res) => {
-    res.status(200).sendFile(__dirname+'/public/images/favicon.ico');
-});
+app.get('/favicon.ico', (req, res) => res.status(200).sendFile(__dirname+'/public/images/favicon.ico'));
 
 app.get('/supported', (req, res) => {
-    let now = new Date();
-    let date = now.getFullYear()+'-'+('0'+(now.getMonth()+1)).slice(-2)+'-'+('0'+now.getDate()).slice(-2);
-    let time = ('0'+now.getHours()).slice(-2)+':'+('0'+now.getMinutes()).slice(-2)+'.'+('0'+now.getSeconds()).slice(-2);
+    const now = new Date();
+    const date = now.getFullYear()+'-'+('0'+(now.getMonth()+1)).slice(-2)+'-'+('0'+now.getDate()).slice(-2);
+    const time = ('0'+now.getHours()).slice(-2)+':'+('0'+now.getMinutes()).slice(-2)+':'+('0'+now.getSeconds()).slice(-2);
 
-    for (let i = 0; i < responseCache.length; i++) {
-        if (responseCache[i].query === 'supported') {
-            res.write(responseCache[i].data, () => { res.end(); });
-            console.log('['+date+'::'+time+'] ['+(req.ip)+'] [SUCCESS (Cached)] [GET '+req.url+']');
-            return;
-        }
-    }
-    let con = mysql.createConnection(mysqlConfig.databaseSettings);
-    con.connect(function(err) {
-        if (err) throw err;
-        con.query('SELECT DISTINCT year FROM '+mysqlConfig.tableName+';', (err, result1) => {
-            if (err) { res.write(err.toString(), () => { res.end(); }); }
-            else {
-                con.query('SELECT DISTINCT departmentName FROM '+mysqlConfig.tableName+';', (err, result2) => {
-                    if (err) { res.write(err.toString(), () => { res.end(); }); }
-                    else { res.write(JSON.stringify(result1)+'|'+JSON.stringify(result2), () => { res.end(); }); }
-                    responseCache.push({ 'query': 'supported', 'data': JSON.stringify(result1)+'|'+JSON.stringify(result2) });
-                    console.log('['+date+'::'+time+'] ['+(req.ip)+'] ['+((result1+result2).length>0?'SUCCESS':'FAILURE')+' (Queried)] [GET '+req.url+']');
-                    con.end();
+    // check if database is syncing, if so, clear cache
+    checkSyncStatus();
+
+    // check cache for response, if not, generate and store response
+    if (!syncing && responseCache['supported']) {
+        res.status(200).json(responseCache['supported']).end();
+        console.log(`[${date}.${time}] [${req.ip}] [SUCCESS (Cached)] [GET ${req.url}]`);
+    } else {
+        const conn = mysql.createConnection(mysqlConfig.databaseSettings);
+        conn.connect((err) => {
+            if (err) { console.log(err.toString); res.write('Backend Error', () => { res.end(); conn.end(); }); }
+            else conn.query(`SELECT DISTINCT year FROM ${mysqlConfig.gradesTable};`, (err, result1) => {
+                if (err) { console.log(err.toString); res.write('Backend Error', () => { res.end(); conn.end(); }); }
+                else conn.query(`SELECT DISTINCT departmentName FROM ${mysqlConfig.gradesTable};`, (err, result2) => {
+                    if (err) { console.log(err.toString); res.write('Backend Error', () => res.end()); }
+                    else {
+                        responseCache['supported'] = {
+                            years: Object.values(result1).map(e => e.year),
+                            departments: Object.values(result2).map(e => e.departmentName),
+                            syncing: syncing,
+                            syncPercentage: syncPercentage
+                        };
+                        res.status(200).json(responseCache['supported']).end();
+                    }
+                    console.log(`[${date}.${time}] [${req.ip}] [${(result1.length+result2.length)>0?'SUCCESS':'FAILURE'} (Queried)] [GET ${req.url}]`);
+                    conn.end();
                 });
-            }
+            });
         });
-    });
+    }
 });
 
 app.get('/search', (req, res) => {
-    let now = new Date();
-    let date = now.getFullYear()+'-'+('0'+(now.getMonth()+1)).slice(-2)+'-'+('0'+now.getDate()).slice(-2);
-    let time = ('0'+now.getHours()).slice(-2)+':'+('0'+now.getMinutes()).slice(-2)+'.'+('0'+now.getSeconds()).slice(-2);
-
-    let queryString = mysql.escape(req.query['d'].replace(/[\W]+/g, '').toUpperCase())+' '+mysql.escape(req.query['c'].replace(/[\W]+/g, '').toUpperCase());
-    for (let i = 0; i < responseCache.length; i++) {
-        if (responseCache[i].query === queryString) {
-            res.write(responseCache[i].data, () => { res.end(); });
-            console.log('['+date+'::'+time+'] ['+(req.ip)+'] [SUCCESS (Cached)] [GET '+req.url+']');
-            return;
-        }
-    }
-
-    let sql = 'SELECT year,semester,professorName,section,honors,avgGPA,numA,numB,numC,numD,numF,numI,numS,numU,numQ,numX FROM '+mysqlConfig.tableName+' WHERE'
-        +' (departmentName='+mysql.escape(req.query['d'].replace(/[\W]+/g, '').toUpperCase())+') AND (course='+mysql.escape(req.query['c'].replace(/[\W]+/g, '').toUpperCase())+');';
-    let con = mysql.createConnection(mysqlConfig.databaseSettings);
-    con.connect(function(err) {
-        if (err) throw err;
-        con.query(sql, (err, result) => {
-            if (err) { res.write(err.toString(), () => {res.end();}); }
-            else { res.write(JSON.stringify(result), () => {res.end();}); }
-            responseCache.push({ 'query': queryString, 'data': JSON.stringify(result) });
-            console.log('['+date+'::'+time+'] ['+(req.ip)+'] ['+(result.length>0?'SUCCESS':'FAILURE')+' (Queried)] [GET '+req.url+']');
-            con.end();
+    const now = new Date();
+    const date = now.getFullYear()+'-'+('0'+(now.getMonth()+1)).slice(-2)+'-'+('0'+now.getDate()).slice(-2);
+    const time = ('0'+now.getHours()).slice(-2)+':'+('0'+now.getMinutes()).slice(-2)+':'+('0'+now.getSeconds()).slice(-2);
+    const dep = mysql.escape(req.query['d'].replace(/[\W]+/g,'').toUpperCase().substring(0, 4));
+    const course = mysql.escape(req.query['c'].replace(/[\W]+/g,'').toUpperCase().substring(0, 3));
+    const queryString = dep+course;
+    
+    // check cache for response, if not, generate and store response
+    if (!syncing && responseCache[queryString]) {
+        res.status(200).json(responseCache[queryString]).end();
+        console.log(`[${date}.${time}] [${req.ip}] [SUCCESS (Cached)] [GET ${req.url}]`);
+    } else {
+        const conn = mysql.createConnection(mysqlConfig.databaseSettings);
+        const sqlQuery = (`SELECT year,semester,professorName,section,honors,avgGPA,numA,numB,numC,numD,numF,numI,numS,numU,numQ,numX FROM 
+            ${mysqlConfig.gradesTable} WHERE (departmentName=${dep}) AND (course=${course});`);
+        conn.connect((err) => {
+            if (err) { console.log(err.toString); res.write('Backend Error', () => { res.end(); conn.end(); }); }
+            else conn.query(sqlQuery, (err, result) => {
+                if (err) { console.log(err.toString); res.write('Backend Error', () => res.end()); }
+                else {
+                    responseCache[queryString] = result;
+                    res.status(200).json(responseCache[queryString]).end();
+                }
+                console.log(`[${date}.${time}] [${req.ip}] [${result.length>0?'SUCCESS':'FAILURE'} (Queried)] [GET ${req.url}]`);
+                conn.end();
+            });
         });
-    });
+    }
 });
 
-app.use(function(req, res) {
-    res.status(404).sendFile('public/404.html', { root: __dirname });
-});
+app.use((req, res) => res.status(404).sendFile('public/404.html', { root: __dirname }));
 
-app.listen(serverConfig.port, () => {
-    console.log(`Server running on port: ${serverConfig.port}`);
+app.listen(serverConfig.port, () => console.log(`Server running on port: ${serverConfig.port}`));
+
+process.on('SIGINT', () => {
+    console.log('\nGracefully shutting down from SIGINT (Ctrl-C)');
+    process.exit(0);
 });

@@ -1,36 +1,46 @@
 document.addEventListener('DOMContentLoaded', () => {
     updateThemeMode();
-    openURL('header_favicon', '/');
-    openURL('footer_favicon', '/');
-    document.getElementById('thememode_toggle').addEventListener('click', () => {
-        toggleThemeMode();
-    });
+    $('#header_favicon') .bind('click', () => window.location='/');
+    $('#footer_favicon') .bind('click', () => window.location='/');
+    $('#dark_theme')     .bind('click', () => { setCookie('style', 'dark'); updateThemeMode(); resetSettingsMenu(); });
+    $('#light_theme')    .bind('click', () => { setCookie('style', 'light'); updateThemeMode(); resetSettingsMenu(); });
     window.dataLayer = window.dataLayer || [];
-    function gtag(){dataLayer.push(arguments);}
+    function gtag() { dataLayer.push(arguments); }
     gtag('js', new Date());
     gtag('config', 'G-HS51DZ5HEM');
 });
-
-function openURL(elementID, link) {
-    document.getElementById(elementID).addEventListener('click', () => { window.location=link;});
-}
 
 function isElementVisible(element) {
     return $(element).offset().top <= ($(window).height() + $(window).scrollTop());
 }
 
+function getCookie(name) {
+    const cookies = document.cookie.split(';');
+    for (let i = 0; i < cookies.length; i++) {
+        const c = cookies[i].trim().split('=');
+        if (c[0] === name) return decodeURIComponent(c[1]);
+    }
+    return '';
+}
+
+function setCookie(name, value, days=365, path='/', domain='', samesite='strict') {
+    let cookie = `${name}=${encodeURIComponent(value)}`;
+    const expiry = new Date();
+    expiry.setDate(expiry.getDate() + days);
+    document.cookie = `${cookie}; expires=${expiry.toUTCString()}; path=${path}; domain=${domain}; samesite=${samesite}; secure`;
+}
+
 function toggleThemeMode() {
-    document.cookie = 'lightmode='+!document.cookie.includes('lightmode=true')+'; SameSite=Strict;';
+    setCookie('style', getCookie('style') === 'light' ? 'dark' : 'light');
     updateThemeMode();
 }
 
 function updateThemeMode() {
-    var light_theme = document.cookie.includes('lightmode=true')
-    if (light_theme && !document.body.classList.contains('light-theme')) {
-        document.getElementById('thememode_toggle').innerHTML = '<i class="fa fa-sun-o" aria-hidden="true"></i>';
-    }
-    else if(document.body.classList.contains('light-theme')) {
-        document.getElementById('thememode_toggle').innerHTML = '<i class="fa fa-moon-o" aria-hidden="true"></i>';
-    }
-    document.body.classList.toggle('light-theme', light_theme);
+    if (!getCookie('style')) setCookie('style', 'dark');
+    $('body').attr('class', getCookie('style'));
+}
+
+function resetSettingsMenu() {
+    $('#settings_menu').prop('checked', false);
+    $('#theme_menu').prop('checked', false);
 }
