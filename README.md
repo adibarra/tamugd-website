@@ -14,11 +14,10 @@ This project is dedicated to helping analyze the massive amounts of data release
 - [ ] Automatically update the database when new data is released
 
 ## How to use:
-1. Run [TAMU-GradeDistribution-ParserV2](https://github.com/TAMU-GradeDistribution/TAMU-GradeDistribution-ParserV2) to generate necessary database table
-2. Rename example_mysql_config.js to mysql_config.js
-3. Rename example_server_config.js to server_config.js
-4. Open and modify the settings in both files to suit your environment
-5. Then run the following npm commands:
+1. Run [TAMU-GradeDistribution-ParserV2](https://github.com/TAMU-GradeDistribution/TAMU-GradeDistribution-ParserV2) to generate necessary database tables
+2. Rename example_tamugd_config.js to tamugd_config.js
+3. Modify the values in tamugd_config.js to suit your environment
+4. Then run the following npm commands:
     ```bash
     # install dependencies
     $ npm install
