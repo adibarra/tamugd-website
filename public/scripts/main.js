@@ -323,18 +323,23 @@ function getGPAChartLabels(years, semesters) {
 
 // automatically select profs for courseGPAChart
 function autoPopulateProfs() {
-    // filter courseProfs to only include professors that have taught at least 2 different semesters
     $('#professor_select').empty();
-    const selectedProfs = courseProfs.filter((value, index, self) => {
-        let count = 0;
-        for (let i = 0; i < self.length; i++) {
-            if (self[i].professorName === value.professorName && (self[i].year !== value.year || self[i].semester !== value.semester)) {
-                count++;
-                if (count >= 2) return true;
+    let selectedProfs = undefined;
+
+    // filter courseProfs to only include professors that have taught at least 2 different semesters if 7 or more than profs exist
+    if (courseProfs.length <= 7) selectedProfs = courseProfs.map(course => course.professorName);
+    else {
+        selectedProfs = courseProfs.filter((value, index, self) => {
+            let count = 0;
+            for (let i = 0; i < self.length; i++) {
+                if (self[i].professorName === value.professorName && (self[i].year !== value.year || self[i].semester !== value.semester)) {
+                    count++;
+                    if (count >= 2) return true;
+                }
             }
-        }
-        return false;
-    }).map(course => course.professorName);
+            return false;
+        }).map(course => course.professorName);
+    }
 
     // all unique professor names are added to the dropdown
     courseProfs.map(course => course.professorName).sort()
