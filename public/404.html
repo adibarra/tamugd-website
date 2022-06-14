@@ -12,7 +12,7 @@
         <meta property="og:title" content="TAMU Grade Distribution" />
         <meta property="og:site_name" content="TAMU Grade Distribution" />
         <meta property="og:url" content="https://gd.adibarra.com/" />
-        <meta property="og:image" content="https://gd.adibarra.com/images/favicon.ico" />
+        <meta property="og:image" content="https://gd.adibarra.com/img/favicon.ico" />
         <meta property="og:description" content="Graphically analyze the grade distribution reports for any course at Texas A&M University published by the registrar. Filter by professor, honors, year and semester." />
 
         <title>TAMU Grade Distribution</title>
@@ -21,17 +21,18 @@
         <link rel="stylesheet" href="/css/fonts.min.css">
         <link rel="stylesheet" href="/css/common.css">
         <script src="https://www.googletagmanager.com/gtag/js?id=G-HS51DZ5HEM" async></script>
-        <script src="/scripts/common.min.js"></script>
+        <script src="/js/bundle.min.js"></script>
+        <script src="/js/common.min.js"></script>
 
         <!--favicons-->
-        <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
-        <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png">
-        <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.png">
-        <link rel="manifest" href="/images/site.webmanifest">
-        <link rel="mask-icon" href="/images/safari-pinned-tab.svg" color="#5BBAD5">
-        <link rel="shortcut icon" href="/images/favicon.ico">
+        <link rel="apple-touch-icon" sizes="180x180" href="/img/apple-touch-icon.png">
+        <link rel="icon" type="image/png" sizes="32x32" href="/img/favicon-32x32.png">
+        <link rel="icon" type="image/png" sizes="16x16" href="/img/favicon-16x16.png">
+        <link rel="manifest" href="/img/site.webmanifest">
+        <link rel="mask-icon" href="/img/safari-pinned-tab.svg" color="#5BBAD5">
+        <link rel="shortcut icon" href="/img/favicon.ico">
         <meta name="msapplication-TileColor" content="#00A300">
-        <meta name="msapplication-config" content="/images/browserconfig.xml">
+        <meta name="msapplication-config" content="/img/browserconfig.xml">
     </head>
 
     <body class="dark">
@@ -39,15 +40,32 @@
         <div class="flex-wrapper">
             <!--header-->
             <div class="header-container">
-                <div class="toggle-switch" id='thememode_toggle'>
-                    <i class="fa fa-moon-o" aria-hidden="true"></i>
-                </div>
                 <div class="header-bar">
                     <div class="header-logo">
-                        <img id="header_favicon" src="/images/tamugd-logo.svg" alt='TAMUGD Logo'>
+                        <img id="header_favicon" src="/img/tamugd-logo.svg" alt='TAMUGD Logo'>
                     </div>
                     <div class="header-text">
                         <h1>TAMU Grade Distribution</h1>
+                    </div>
+                    <label for="settings_menu"></label>
+                    <input type="checkbox" id="settings_menu" class="menu-checkbox">
+                    <div class="menu">
+                        <label class="menu-toggle" for="settings_menu"><i class="fa fa-gear-o" aria-hidden="true"></i></label>
+                        <ul>
+                            <li>
+                                <label for="theme_menu"><i class="fa fa-angle-double-left" aria-hidden="true"></i>&nbsp;Select Theme</label>
+                                <input type="checkbox" id="theme_menu" class="menu-checkbox">
+                                <div class="menu">
+                                    <label class="menu-toggle" for="theme_menu"></label>
+                                    <ul>
+                                        <li><a id="dark_theme" href="javascript:void(0);">Dark Theme</a></li>
+                                        <li><a id="light_theme" href="javascript:void(0);">Light Theme</a></li>
+                                    </ul>
+                                </div>
+                            </li>
+                            <!--<li><a id="option2" href="javascript:void(0);">option2</a></li>-->
+                            <!--<li><a id="option3" href="javascript:void(0);">option3</a></li>-->
+                        </ul>
                     </div>
                 </div>
             </div>
@@ -71,13 +89,13 @@
                     </div>
 
                     <div class="footer-logo">
-                        <img id="footer_favicon" src="/images/tamugd-logo.svg" alt='TAMUGD Logo'>
+                        <img id="footer_favicon" src="/img/tamugd-logo.svg" alt='TAMUGD Logo'>
                     </div>
 
                     <div class="footer-right">
                         <div class="footer-subtext-right">
                             <p><i class="fa fa-github fa-lg" title="Github logo"></i><span class="color-standard"> @<a href="https://github.com/adibarra">adibarra</a></span></p>
-                            <p><i class="fa fa-github fa-lg" title="Github logo"></i><span class="color-standard"> @<a href="https://github.com/thestarch2">thestarch2</a></span></p>
+                            <p><i class="fa fa-envelope fa-lg" title="Email icon"></i><span class="color-standard"> <a href="mailto://contact@adibarra.com">Contact me</a></span></p>
                         </div>
                     </div>
                 </div>

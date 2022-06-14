@@ -53,6 +53,10 @@
     content: "\f062"
 }
 
+.fa-envelope:before {
+    content: "\f0e0"
+}
+
 .fa-github:before {
     content: "\f09b"
 }

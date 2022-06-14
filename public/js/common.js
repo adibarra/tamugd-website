@@ -1,9 +1,9 @@
 document.addEventListener('DOMContentLoaded', () => {
     updateThemeMode();
-    $('#header_favicon') .bind('click', () => window.location='/');
-    $('#footer_favicon') .bind('click', () => window.location='/');
-    $('#dark_theme')     .bind('click', () => { setCookie('style', 'dark'); updateThemeMode(); resetSettingsMenu(); });
-    $('#light_theme')    .bind('click', () => { setCookie('style', 'light'); updateThemeMode(); resetSettingsMenu(); });
+    $('#header_favicon').bind('click', () => window.location='/');
+    $('#footer_favicon').bind('click', () => window.location='/');
+    $('#dark_theme')    .bind('click', () => { setCookie('style', 'dark'); updateThemeMode(); resetSettingsMenu(); });
+    $('#light_theme')   .bind('click', () => { setCookie('style', 'light'); updateThemeMode(); resetSettingsMenu(); });
     window.dataLayer = window.dataLayer || [];
     function gtag() { dataLayer.push(arguments); }
     gtag('js', new Date());
