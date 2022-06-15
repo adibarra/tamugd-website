@@ -1,9 +1,8 @@
 # sitemap
 sitemap.xml
 
-# config files
-server_config.js
-mysql_config.js
+# config file
+tamugd_config.js
 
 # ignore some minified files
 /*.min.js

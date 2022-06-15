@@ -8,7 +8,7 @@ const config = {
     },
     gradesTable: 'tamugrades',
     statusTable: 'status',
-    port       :  5001,
+    port       :  3002,
 };
 
 module.exports = config;
