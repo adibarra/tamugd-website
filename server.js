@@ -60,7 +60,9 @@ app.use((req, res, next) => {
     const now = new Date();
     const date = now.getFullYear()+'-'+('0'+(now.getMonth()+1)).slice(-2)+'-'+('0'+now.getDate()).slice(-2);
     const time = ('0'+now.getHours()).slice(-2)+':'+('0'+now.getMinutes()).slice(-2)+':'+('0'+now.getSeconds()).slice(-2);
-    if (req.get('Referrer')) logger.info(`[${date}.${time}] [${req.ip}] [Referrer: ${req.get('Referrer')}]`);
+    const ip = ((req.headers['cf-connecting-ip'] || req.ip)+'        ').slice(0,15);
+
+    if (req.get('Referrer')) logger.info(`[${date}.${time}] [${ip}] [Referrer: ${req.get('Referrer')}]`);
     next();
 });
 
@@ -72,6 +74,7 @@ app.get('/supported', (req, res) => {
     const now = new Date();
     const date = now.getFullYear()+'-'+('0'+(now.getMonth()+1)).slice(-2)+'-'+('0'+now.getDate()).slice(-2);
     const time = ('0'+now.getHours()).slice(-2)+':'+('0'+now.getMinutes()).slice(-2)+':'+('0'+now.getSeconds()).slice(-2);
+    const ip = ((req.headers['cf-connecting-ip'] || req.ip)+'        ').slice(0,15);
 
     // check if database is syncing, if so, clear cache
     checkSyncStatus();
@@ -79,7 +82,7 @@ app.get('/supported', (req, res) => {
     // check cache for response, if not, generate and store response
     if (!syncing && responseCache['supported']) {
         res.status(200).json(responseCache['supported']).end();
-        logger.info(`[${date}.${time}] [${req.ip}] [SUCCESS (Cached)] [GET ${req.url}]`);
+        logger.info(`[${date}.${time}] [${ip}] [SUCCESS (Cached)] [GET ${req.url}]`);
     } else {
         const conn = mysql.createConnection(config.databaseSettings);
         conn.connect((err) => {
@@ -97,7 +100,7 @@ app.get('/supported', (req, res) => {
                         };
                         res.status(200).json(responseCache['supported']).end();
                     }
-                    logger.info(`[${date}.${time}] [${req.ip}] [${(result1.length+result2.length)>0?'SUCCESS':'FAILURE'} (Queried)] [GET ${req.url}]`);
+                    logger.info(`[${date}.${time}] [${ip}] [${(result1.length+result2.length)>0?'SUCCESS':'FAILURE'} (Queried)] [GET ${req.url}]`);
                     conn.end();
                 });
             });
@@ -109,6 +112,7 @@ app.get('/search', (req, res) => {
     const now = new Date();
     const date = now.getFullYear()+'-'+('0'+(now.getMonth()+1)).slice(-2)+'-'+('0'+now.getDate()).slice(-2);
     const time = ('0'+now.getHours()).slice(-2)+':'+('0'+now.getMinutes()).slice(-2)+':'+('0'+now.getSeconds()).slice(-2);
+    const ip = ((req.headers['cf-connecting-ip'] || req.ip)+'        ').slice(0,15);
     
     if(req.query['d'] && req.query['c']) {
         const dep = mysql.escape(req.query['d'].replace(/[\W]+/g,'').toUpperCase().substring(0, 4));
@@ -118,7 +122,7 @@ app.get('/search', (req, res) => {
         // check cache for response, if not, generate and store response
         if (!syncing && responseCache[queryString]) {
             res.status(200).json(responseCache[queryString]).end();
-            logger.info(`[${date}.${time}] [${req.ip}] [SUCCESS (Cached)] [GET ${req.url}]`);
+            logger.info(`[${date}.${time}] [${ip}] [SUCCESS (Cached)] [GET ${req.url}]`);
         } else {
             const conn = mysql.createConnection(config.databaseSettings);
             const sqlQuery = (`SELECT year,semester,professorName,section,honors,avgGPA,numA,numB,numC,numD,numF,numI,numS,numU,numQ,numX FROM 
@@ -131,13 +135,13 @@ app.get('/search', (req, res) => {
                         responseCache[queryString] = result;
                         res.status(200).json(responseCache[queryString]).end();
                     }
-                    logger.info(`[${date}.${time}] [${req.ip}] [${result.length>0?'SUCCESS':'FAILURE'} (Queried)] [GET ${req.url}]`);
+                    logger.info(`[${date}.${time}] [${ip}] [${result.length>0?'SUCCESS':'FAILURE'} (Queried)] [GET ${req.url}]`);
                     conn.end();
                 });
             });
         }
     } else {
-        logger.info(`[${date}.${time}] [${req.ip}] Missing Parameters [GET ${req.url}]`);
+        logger.info(`[${date}.${time}] [${ip}] Missing Parameters [GET ${req.url}]`);
         res.write('Missing Parameters Error', () => res.end());
     }
 });
