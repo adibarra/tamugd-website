@@ -93,11 +93,11 @@ app.get('/supported', (req, res) => {
     } else {
         const conn = mysql.createConnection(config.databaseSettings);
         conn.connect((err) => {
-            if (err) { logger.error(err); res.write('Backend Error', () => { res.end(); conn.end(); }); }
+            if (err) { logger.error(err); res.write('Backend Error', () => { res.end(); conn.end(); logger.info(`[${ip}] [❌ Queried] [GET ${req.url}]`); }); }
             else conn.query(`SELECT DISTINCT year FROM ${config.gradesTable};`, (err, result1) => {
-                if (err) { logger.error(err); res.write('Backend Error', () => { res.end(); conn.end(); }); }
+                if (err) { logger.error(err); res.write('Backend Error', () => { res.end(); conn.end(); logger.info(`[${ip}] [❌ Queried] [GET ${req.url}]`); }); }
                 else conn.query(`SELECT DISTINCT departmentName FROM ${config.gradesTable};`, (err, result2) => {
-                    if (err) { logger.error(err); res.write('Backend Error', () => res.end()); }
+                    if (err) { logger.error(err); res.write('Backend Error', () => { res.end(); logger.info(`[${ip}] [❌ Queried] [GET ${req.url}]`); }); }
                     else {
                         responseCache['supported'] = {
                             years: Object.values(result1).map(e => e.year),
@@ -106,8 +106,8 @@ app.get('/supported', (req, res) => {
                             syncPercentage: syncPercentage
                         };
                         res.status(200).json(responseCache['supported']).end();
-                        logger.info(`[${ip}] [${(result1.length+result2.length)>0?'✔️':'❌'} Queried] [GET ${req.url}]`);
                     }
+                    logger.info(`[${ip}] [${(result1.length+result2.length)>0?'✔️':'❌'} Queried] [GET ${req.url}]`);
                     conn.end();
                 });
             });
