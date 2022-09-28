@@ -54,10 +54,10 @@ document.addEventListener('DOMContentLoaded', () => {
     getSupportedData();
 
     courseGPAChartPlaceholderDataset = [
-        { label: 'Professor 1', data: [1.2,1.8,undefined,3.1,3.2,3.0,3.3,3.6,2.5,2.9,undefined,undefined,3.0,2.6,3.2,3.6], fill: false, borderColor: '#666666', backgroundColor: '#66666680', tension: 0.1, borderWidth: 2, segment: { borderDash: ctx => skipped(ctx, [6, 6]) } },
-        { label: 'Professor 2', data: [3.2,2.8,3.2,2.6,2.3,undefined,undefined,3.2,3.5,3.6,3.4,2.6,2.9,3.1,3.4,2.75], fill: false, borderColor: '#9944FF', backgroundColor: '#9944FF80', tension: 0.1, borderWidth: 2, segment: { borderDash: ctx => skipped(ctx, [6, 6]) } },
-        { label: 'Professor 3', data: [2.2,3.8,2.6,3.2,2.6,3.6,2.7,2.1,2.2,1.6,1.45,2.1,2.2,1.45,1.6,2.1], fill: false, borderColor: '#CC77CC', backgroundColor: '#CC77CC80', tension: 0.1, borderWidth: 2, segment: { borderDash: ctx => skipped(ctx, [6, 6]) } },
-        { label: 'Professor 4', data: [1.5,1.6,1.4,1.8,1.3,1.4,1.9,1.7,1.5,1.5,1.7,1.8,2.0,2.1,1.95,1.7], fill: false, borderColor: '#77CC77', backgroundColor: '#77CC7780', tension: 0.1, borderWidth: 2, segment: { borderDash: ctx => skipped(ctx, [6, 6]) } }
+        { label: 'Professor 1', data: [1.2,1.8,undefined,3.1,3.2,3.0,3.3,3.6,2.5,2.9,undefined,undefined,3.0,2.6,3.2,3.6,3.7,3.5], fill: false, borderColor: '#666666', backgroundColor: '#66666680', tension: 0.1, borderWidth: 2, segment: { borderDash: ctx => skipped(ctx, [6, 6]) } },
+        { label: 'Professor 2', data: [3.2,2.8,3.2,2.6,2.3,undefined,undefined,3.2,3.5,3.6,3.4,2.6,2.9,3.1,3.4,2.75,2.9,2.8], fill: false, borderColor: '#9944FF', backgroundColor: '#9944FF80', tension: 0.1, borderWidth: 2, segment: { borderDash: ctx => skipped(ctx, [6, 6]) } },
+        { label: 'Professor 3', data: [2.2,3.8,2.6,3.2,2.6,3.6,2.7,2.1,2.2,1.6,1.45,2.1,2.2,1.45,1.6,2.1,2.3,2.6], fill: false, borderColor: '#CC77CC', backgroundColor: '#CC77CC80', tension: 0.1, borderWidth: 2, segment: { borderDash: ctx => skipped(ctx, [6, 6]) } },
+        { label: 'Professor 4', data: [1.5,1.6,1.4,1.8,1.3,1.4,1.9,1.7,1.5,1.5,1.7,1.8,2.0,2.1,1.95,1.7,1.5,1.25], fill: false, borderColor: '#77CC77', backgroundColor: '#77CC7780', tension: 0.1, borderWidth: 2, segment: { borderDash: ctx => skipped(ctx, [6, 6]) } }
     ];
     courseGPAChart = new Chart(ctx = $('#gpa_chart_canvas')[0].getContext('2d'), {
         type: 'line',
