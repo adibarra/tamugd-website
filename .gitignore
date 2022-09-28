@@ -13,6 +13,9 @@ logs/
 */bundle/*.min.css
 
 # node dependencies
+.yarn/
 node_modules/
 package-lock.json
 yarn.lock
+.yarnrc.yml
+.pnp.*
