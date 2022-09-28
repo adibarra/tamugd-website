@@ -49,9 +49,16 @@ app.use(helmet({
             "style-src": ["'self'", "'unsafe-inline'"],
             "font-src": ["'self'", 'https://stackpath.bootstrapcdn.com/font-awesome/', 'https://fonts.gstatic.com/s/'],
             "img-src": ["'self'", 'data:', 'https://www.google-analytics.com/g/']
-        },
+        }
     }
 }));
+
+// get referer if available
+app.use('/', (req, res, next) => {
+    const ip = ((req.headers['cf-connecting-ip'] || req.ip)+'        ').slice(0,15);
+    if (req.get('Referer')) logger.info(`[${ip}] [Refered By: ${req.get('Referer')}]`);
+    next();
+});
 
 // set ./public as root directory
 app.use(express.static('public'));
@@ -63,18 +70,12 @@ app.get('/favicon.ico', (req, res) => res.status(200).sendFile(__dirname+'/publi
 app.get('/supported', (req, res) => {
     const ip = ((req.headers['cf-connecting-ip'] || req.ip)+'        ').slice(0,15);
     let buildPercentage = '0';
-    let referrer = 'NOREF';
-
-    // if there is a referrer, add it to the log
-    if (req.get('Referrer')) referrer = req.get('Referrer');
 
     { // check if database is building, if so, clear cache
         const conn = mysql2.createConnection(config.databaseSettings);
         conn.query('SELECT * FROM '+config.statusTable+';', (err, result) => {
             if (err) { logger.error(err); res.write('Backend Error', () => { res.end(); }); }
-            else if (result && result.length > 0) {
-                buildPercentage = result[0].value;
-            }
+            else if (result && result.length > 0) buildPercentage = result[0].value;
         });
         if (buildPercentage !== '100') RESPONSE_CACHE = {};
     }
@@ -82,7 +83,7 @@ app.get('/supported', (req, res) => {
     // check cache for response, if not, generate and store response
     if (RESPONSE_CACHE['supported']) {
         res.status(200).json(RESPONSE_CACHE['supported']).end();
-        logger.info(`[${ip}] [${referrer}] [✔️ Cached] [GET ${req.url}]`);
+        logger.info(`[${ip}] [✔️ Cached] [GET ${req.url}]`);
     } else {
         const conn = mysql2.createConnection(config.databaseSettings);
         conn.query(`SELECT DISTINCT year FROM ${config.gradesTable};`, (err, result1) => {
@@ -97,7 +98,7 @@ app.get('/supported', (req, res) => {
                     };
                     res.status(200).json(RESPONSE_CACHE['supported']).end();
                 }
-                logger.info(`[${ip}] [${referrer}] [${(result1.length+result2.length)>0?'✔️':'❌'} Queried] [GET ${req.url}]`);
+                logger.info(`[${ip}] [${(result1.length+result2.length)>0?'✔️':'❌'} Queried] [GET ${req.url}]`);
             });
         });
     }
@@ -141,6 +142,7 @@ app.get('/search', (req, res) => {
 // default all other requests to the 404 page
 app.use((req, res) => {
     res.status(404).sendFile('public/404.html', { root: __dirname });
+    const ip = ((req.headers['cf-connecting-ip'] || req.ip)+'        ').slice(0,15);
     logger.info(`[${ip}] [❌ 404] [GET ${req.url}]`);
 });
 
