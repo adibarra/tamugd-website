@@ -33,25 +33,6 @@ let responseCache = {};
 let syncing = false;
 let syncPercentage = '0';
 
-function checkSyncStatus() {
-    const conn = mysql.createConnection(config.databaseSettings);
-    conn.connect((err) => {
-        if (err) { logger.error(err.toString); res.write('Backend Error', () => { res.end(); conn.end(); }); }
-        else {
-            conn.query('SELECT * FROM '+config.statusTable+';', (err, result) => {
-                if (!err) {
-                    if (result && result.length >= 2) {
-                        syncing = result[0].value;
-                        syncPercentage = result[1].value;
-                    }
-                }
-                conn.end();
-            });
-        }
-    });
-    if (syncing) responseCache = {};
-}
-
 app.set('trust proxy', 1);
 app.use(compression());
 
@@ -71,9 +52,10 @@ app.use(helmet({
 }));
 
 app.use((req, res, next) => {
-    const ip = ((req.headers['cf-connecting-ip'] || req.ip)+'        ').slice(0,15);
-
-    if (req.get('Referrer')) logger.info(`[${ip}] [Referrer: ${req.get('Referrer')}]`);
+    if (req.get['Referrer'] && req.get['Referrer'] != req.hostname) {
+        const ip = ((req.get['cf-connecting-ip'] || req.ip)+'        ').slice(0,15);
+        logger.info(`[${ip}] [Referrer: ${req.get['Referrer']}]`);
+    }
     next();
 });
 
@@ -82,23 +64,40 @@ app.use(express.static('public'));
 app.get('/favicon.ico', (req, res) => res.status(200).sendFile(__dirname+'/public/img/favicon.ico'));
 
 app.get('/supported', (req, res) => {
-    const ip = ((req.headers['cf-connecting-ip'] || req.ip)+'        ').slice(0,15);
+    const ip = ((req.get['cf-connecting-ip'] || req.ip)+'        ').slice(0,15);
 
     // check if database is syncing, if so, clear cache
-    checkSyncStatus();
+    () => {
+        const conn = mysql.createConnection(config.databaseSettings);
+        conn.connect((err) => {
+            if (err) { logger.error(err); res.write('Backend Error', () => { res.end(); }); }
+            else {
+                conn.query('SELECT * FROM '+config.statusTable+';', (err, result) => {
+                    if (!err) {
+                        if (result && result.length >= 2) {
+                            syncing = result[0].value;
+                            syncPercentage = result[1].value;
+                        }
+                    }
+                });
+            }
+            conn.end();
+        });
+        if (syncing) responseCache = {};
+    };
 
     // check cache for response, if not, generate and store response
     if (!syncing && responseCache['supported']) {
         res.status(200).json(responseCache['supported']).end();
-        logger.info(`[${ip}] [SUCCESS (Cached)] [GET ${req.url}]`);
+        logger.info(`[${ip}] [✔️ Cached] [GET ${req.url}]`);
     } else {
         const conn = mysql.createConnection(config.databaseSettings);
         conn.connect((err) => {
-            if (err) { logger.error(err.toString); res.write('Backend Error', () => { res.end(); conn.end(); }); }
+            if (err) { logger.error(err); res.write('Backend Error', () => { res.end(); }); }
             else conn.query(`SELECT DISTINCT year FROM ${config.gradesTable};`, (err, result1) => {
-                if (err) { logger.error(err.toString); res.write('Backend Error', () => { res.end(); conn.end(); }); }
+                if (err) { logger.error(err); res.write('Backend Error', () => { res.end(); }); }
                 else conn.query(`SELECT DISTINCT departmentName FROM ${config.gradesTable};`, (err, result2) => {
-                    if (err) { logger.error(err.toString); res.write('Backend Error', () => res.end()); }
+                    if (err) { logger.error(err); res.write('Backend Error', () => res.end()); }
                     else {
                         responseCache['supported'] = {
                             years: Object.values(result1).map(e => e.year),
@@ -108,16 +107,16 @@ app.get('/supported', (req, res) => {
                         };
                         res.status(200).json(responseCache['supported']).end();
                     }
-                    logger.info(`[${ip}] [${(result1.length+result2.length)>0?'SUCCESS':'FAILURE'} (Queried)] [GET ${req.url}]`);
-                    conn.end();
+                    logger.info(`[${ip}] [${(result1.length+result2.length)>0?'✔️':'❌'} Queried] [GET ${req.url}]`);
                 });
             });
+            conn.end();
         });
     }
 });
 
 app.get('/search', (req, res) => {
-    const ip = ((req.headers['cf-connecting-ip'] || req.ip)+'        ').slice(0,15);
+    const ip = ((req.get['cf-connecting-ip'] || req.ip)+'        ').slice(0,15);
     
     if(req.query['d'] && req.query['c']) {
         const dep = mysql.escape(req.query['d'].replace(/[\W]+/g,'').toUpperCase().substring(0, 4));
@@ -127,27 +126,27 @@ app.get('/search', (req, res) => {
         // check cache for response, if not, generate and store response
         if (!syncing && responseCache[queryString]) {
             res.status(200).json(responseCache[queryString]).end();
-            logger.info(`[${ip}] [SUCCESS (Cached)] [GET ${req.url}]`);
+            logger.info(`[${ip}] [✔️ Cached] [GET ${req.url}]`);
         } else {
             const conn = mysql.createConnection(config.databaseSettings);
             const sqlQuery = (`SELECT year,semester,professorName,section,honors,avgGPA,numA,numB,numC,numD,numF,numI,numS,numU,numQ,numX FROM 
                 ${config.gradesTable} WHERE (departmentName=${dep}) AND (course=${course});`);
             conn.connect((err) => {
-                if (err) { logger.error(err.toString); res.write('Backend Error', () => { res.end(); conn.end(); }); }
+                if (err) { logger.error(err); res.write('Backend Error', () => { res.end(); }); }
                 else conn.query(sqlQuery, (err, result) => {
-                    if (err) { logger.error(err.toString); res.write('Backend Error', () => res.end()); }
+                    if (err) { logger.error(err); res.write('Backend Error', () => res.end()); }
                     else {
                         responseCache[queryString] = result;
                         res.status(200).json(responseCache[queryString]).end();
                     }
-                    logger.info(`[${ip}] [${result.length>0?'SUCCESS':'FAILURE'} (Queried)] [GET ${req.url}]`);
-                    conn.end();
+                    logger.info(`[${ip}] [${result.length>0?'✔️':'❌'} Queried] [GET ${req.url}]`);
                 });
+                conn.end();
             });
         }
     } else {
-        logger.info(`[${ip}] Missing Parameters [GET ${req.url}]`);
-        res.write('Missing Parameters Error', () => res.end());
+        logger.info(`[${ip}] [❌ Missing Search Parameters] [GET ${req.url}]`);
+        res.write('Frontend Error: Missing departmentName or course', () => res.end());
     }
 });
 
@@ -156,6 +155,6 @@ app.use((req, res) => res.status(404).sendFile('public/404.html', { root: __dirn
 app.listen(config.port, () => logger.info(`Server running on port: ${config.port}`));
 
 process.on('SIGINT', () => {
-    logger.info('Gracefully shutting down from SIGINT (Ctrl-C)');
+    logger.info('Gracefully shutting down from SIGINT (Ctrl-C)\n');
     process.exit(0);
 });
