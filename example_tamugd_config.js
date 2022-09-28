@@ -6,7 +6,7 @@ const config = {
         user     : 'database_username_here',
         password : 'database_password_here',
     },
-    gradesTable : 'tamugrades',
+    gradesTable : 'grades',
     statusTable : 'status',
     port        :  5000,
 };
