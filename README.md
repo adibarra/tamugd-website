@@ -1,4 +1,4 @@
-# TAMU-GradeDistribution-Website
+# tamugd-website
 This project is dedicated to helping analyze the massive amounts of data released every semester by Texas A&M University's Registrar's office.
 
 ---
@@ -14,7 +14,7 @@ This project is dedicated to helping analyze the massive amounts of data release
 - [ ] Automatically update the database when new data is released
 
 ## How to use:
-1. Run [TAMU-GradeDistribution-ParserV2](https://github.com/TAMU-GradeDistribution/TAMU-GradeDistribution-ParserV2) to generate necessary database tables
+1. Run [tamugd-parser](https://github.com/TAMU-GradeDistribution/tamugd-parser) to generate necessary database tables
 2. Rename example_tamugd_config.js to tamugd_config.js
 3. Modify the values in tamugd_config.js to suit your environment
 4. Then run the following npm commands:
