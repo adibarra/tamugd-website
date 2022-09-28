@@ -1,6 +1,6 @@
 {
-  "name": "tamu-gradedistribution-website",
-  "version": "1.0.0",
+  "name": "tamugd-website",
+  "version": "1.2.0",
   "description": "The goal of this project is to create a website which is capable of creating visualizations for the grade distribution reports published by Texas A&M University's Registrar's office.",
   "main": "server.js",
   "dependencies": {
@@ -17,12 +17,12 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/TAMU-GradeDistribution/TAMU-GradeDistribution-Website.git"
+    "url": "git+https://github.com/TAMU-GradeDistribution/tamugd-website.git"
   },
-  "author": "@adibarra @thestarch2",
+  "author": "@adibarra",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/TAMU-GradeDistribution/TAMU-GradeDistribution-Website/issues"
+    "url": "https://github.com/TAMU-GradeDistribution/tamugd-website/issues"
   },
-  "homepage": "https://github.com/TAMU-GradeDistribution/TAMU-GradeDistribution-Website#readme"
+  "homepage": "https://github.com/TAMU-GradeDistribution/tamugd-website#readme"
 }
