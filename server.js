@@ -71,17 +71,17 @@ app.get('/favicon.ico', (req, res) => res.status(200).sendFile(__dirname+'/publi
 // return information about the grade data in the database and database building progress
 app.get('/supported', (req, res) => {
     const ip = ((req.get['cf-connecting-ip'] || req.ip)+'        ').slice(0,15);
-    let buildPercentage = '100';
+    let buildPercentage = '0';
 
     { // check if database is building, if so, clear cache
         const conn = mysql2.createConnection(config.databaseSettings);
         conn.query('SELECT * FROM '+config.statusTable+';', (err, result) => {
             if (err) { logger.error(err); res.write('Backend Error', () => { res.end(); }); }
-            else if (result && result.length >= 2) {
-                if (result[0].value) RESPONSE_CACHE = {};
-                buildPercentage = result[1].value;
+            else if (result && result.length > 0) {
+                buildPercentage = result[0].value;
             }
         });
+        if (buildPercentage !== '100') RESPONSE_CACHE = {};
     }
 
     // check cache for response, if not, generate and store response
