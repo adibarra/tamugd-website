@@ -168,6 +168,7 @@ label:focus {
     height: 100%;
     display: flex;
     align-items: center;
+    overflow: hidden;
 }
 .header-logo {
     width: 3.25em;
