@@ -232,7 +232,7 @@ function requestSupported() {
 // send [/search] request to server and cache response
 function requestSearch(department, course) {
     return new Promise((resolve, reject) => {
-        setTimeout(() => { reject('Server error ([/search] timed out). Try again in a bit.'); return; }, 5000);
+        setTimeout(() => { reject('Server error ([/search] timed out). Refresh or try again in a bit.'); return; }, 5000);
         department = department.toUpperCase();
         course = course.toUpperCase();
         const query = `search?d=${department}&c=${course}`;
@@ -257,7 +257,7 @@ function requestSearch(department, course) {
                 filterCourseData();
                 responseCache[query] = Object.freeze(courseDataAll);
                 resolve('Queried server');
-            }).catch(() => reject('Server error ([/search] bad response). Try again later.'))
+            }).catch(() => reject('Server error ([/search] bad response). Refresh or try again in a bit.'))
         }).catch(err => reject(err));
     });
 }
