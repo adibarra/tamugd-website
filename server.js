@@ -1,7 +1,7 @@
 const express = require('express');
 const helmet = require('helmet');
 const compression = require('compression')
-const mysql = require('mysql2');
+const mysql2 = require('mysql2');
 const winston = require('winston'); require('winston-daily-rotate-file');
 const config = require('./tamugd_config.js');
 
@@ -31,9 +31,7 @@ const logger = winston.createLogger({
 
 // create express instance
 const app = express();
-let responseCache = {};
-let building = false;
-let buildPercentage = '0';
+let RESPONSE_CACHE = {};
 
 // trust one layer of proxies (cloudflare)
 app.set('trust proxy', 1);
@@ -73,49 +71,38 @@ app.get('/favicon.ico', (req, res) => res.status(200).sendFile(__dirname+'/publi
 // return information about the grade data in the database and database building progress
 app.get('/supported', (req, res) => {
     const ip = ((req.get['cf-connecting-ip'] || req.ip)+'        ').slice(0,15);
+    let buildPercentage = '100';
 
     { // check if database is building, if so, clear cache
-        const conn = mysql.createConnection(config.databaseSettings);
-        conn.connect((err) => {
-            if (err) { logger.error(err); res.write('Backend Error', () => { res.end(); conn.end(); }); }
-            else {
-                conn.query('SELECT * FROM '+config.statusTable+';', (err, result) => {
-                    if (!err) {
-                        if (result && result.length >= 2) {
-                            building = result[0].value;
-                            buildPercentage = result[1].value;
-                        }
-                    }
-                    conn.end();
-                });
+        const conn = mysql2.createConnection(config.databaseSettings);
+        conn.query('SELECT * FROM '+config.statusTable+';', (err, result) => {
+            if (err) { logger.error(err); res.write('Backend Error', () => { res.end(); }); }
+            else if (result && result.length >= 2) {
+                if (result[0].value) RESPONSE_CACHE = {};
+                buildPercentage = result[1].value;
             }
         });
-        if (building) responseCache = {};
     }
 
     // check cache for response, if not, generate and store response
-    if (!building && responseCache['supported']) {
-        res.status(200).json(responseCache['supported']).end();
+    if (RESPONSE_CACHE['supported']) {
+        res.status(200).json(RESPONSE_CACHE['supported']).end();
         logger.info(`[${ip}] [✔️ Cached] [GET ${req.url}]`);
     } else {
-        const conn = mysql.createConnection(config.databaseSettings);
-        conn.connect((err) => {
-            if (err) { logger.error(err); res.write('Backend Error', () => { res.end(); conn.end(); }); }
-            else conn.query(`SELECT DISTINCT year FROM ${config.gradesTable};`, (err, result1) => {
-                if (err) { logger.error(err); res.write('Backend Error', () => { res.end(); conn.end(); }); }
-                else conn.query(`SELECT DISTINCT departmentName FROM ${config.gradesTable};`, (err, result2) => {
-                    if (err) { logger.error(err); res.write('Backend Error', () => res.end()); }
-                    else {
-                        responseCache['supported'] = {
-                            years: Object.values(result1).map(e => e.year),
-                            departments: Object.values(result2).map(e => e.departmentName),
-                            buildPercentage: buildPercentage
-                        };
-                        res.status(200).json(responseCache['supported']).end();
-                    }
-                    logger.info(`[${ip}] [${(result1.length+result2.length)>0?'✔️':'❌'} Queried] [GET ${req.url}]`);
-                    conn.end();
-                });
+        const conn = mysql2.createConnection(config.databaseSettings);
+        conn.query(`SELECT DISTINCT year FROM ${config.gradesTable};`, (err, result1) => {
+            if (err) { logger.error(err); res.write('Backend Error', () => { res.end(); }); }
+            else conn.query(`SELECT DISTINCT departmentName FROM ${config.gradesTable};`, (err, result2) => {
+                if (err) { logger.error(err); res.write('Backend Error', () => res.end()); }
+                else {
+                    RESPONSE_CACHE['supported'] = {
+                        years: Object.values(result1).map(e => e.year),
+                        departments: Object.values(result2).map(e => e.departmentName),
+                        buildPercentage: buildPercentage
+                    };
+                    res.status(200).json(RESPONSE_CACHE['supported']).end();
+                }
+                logger.info(`[${ip}] [${(result1.length+result2.length)>0?'✔️':'❌'} Queried] [GET ${req.url}]`);
             });
         });
     }
@@ -126,28 +113,27 @@ app.get('/search', (req, res) => {
     const ip = ((req.get['cf-connecting-ip'] || req.ip)+'        ').slice(0,15);
     
     if(req.query['d'] && req.query['c']) {
-        const dep = mysql.escape(req.query['d'].replace(/[\W]+/g,'').toUpperCase().substring(0, 4));
-        const course = mysql.escape(req.query['c'].replace(/[\W]+/g,'').toUpperCase().substring(0, 3));
+        const dep = mysql2.escape(req.query['d'].replace(/[\W]+/g,'').toUpperCase().substring(0, 4));
+        const course = mysql2.escape(req.query['c'].replace(/[\W]+/g,'').toUpperCase().substring(0, 3));
         const queryString = dep+course;
         
         // check cache for response, if not, generate and store response
-        if (!building && responseCache[queryString]) {
-            res.status(200).json(responseCache[queryString]).end();
+        if (RESPONSE_CACHE[queryString]) {
+            res.status(200).json(RESPONSE_CACHE[queryString]).end();
             logger.info(`[${ip}] [✔️ Cached] [GET ${req.url}]`);
         } else {
-            const conn = mysql.createConnection(config.databaseSettings);
+            const conn = mysql2.createConnection(config.databaseSettings);
             const sqlQuery = (`SELECT year,semester,professorName,section,honors,avgGPA,numA,numB,numC,numD,numF,numI,numS,numU,numQ,numX FROM 
                 ${config.gradesTable} WHERE (departmentName=${dep}) AND (course=${course});`);
             conn.connect((err) => {
-                if (err) { logger.error(err); res.write('Backend Error', () => { res.end(); conn.end();}); }
+                if (err) { logger.error(err); res.write('Backend Error', () => { res.end();}); }
                 else conn.query(sqlQuery, (err, result) => {
                     if (err) { logger.error(err); res.write('Backend Error', () => res.end()); }
                     else {
-                        responseCache[queryString] = result;
-                        res.status(200).json(responseCache[queryString]).end();
+                        RESPONSE_CACHE[queryString] = result;
+                        res.status(200).json(RESPONSE_CACHE[queryString]).end();
                     }
                     logger.info(`[${ip}] [${result.length>0?'✔️':'❌'} Queried] [GET ${req.url}]`);
-                    conn.end();
                 });
             });
         }
