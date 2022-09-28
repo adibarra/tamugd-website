@@ -175,7 +175,7 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 
-// get supported years/departments/sync-status
+// get supported years/departments/db-status
 function getSupportedData() {
     requestSupported().then(() => {
         $('#department_select').empty();
@@ -220,8 +220,9 @@ function requestSupported() {
             response.json().then(responseJSON => {
                 allYears = responseJSON.years.sort();
                 allDepartments = responseJSON.departments.sort();
-                $('#sync_banner').toggleClass('hidden', !Boolean(responseJSON.syncing));
-                $('#sync_percentage').text(responseJSON.syncPercentage);
+                console.log(responseJSON.buildPercentage)
+                $('#build_banner').toggleClass('hidden', Boolean(responseJSON.buildPercentage == 100));
+                $('#build_percentage').text(responseJSON.buildPercentage);
                 responseCache['supported'] = { 'query': 'supported', 'years': allYears, 'departments': allDepartments };
                 resolve('Queried server');
             }).catch(() => reject('Server error ([/supported] bad response). Try refreshing the page.'));

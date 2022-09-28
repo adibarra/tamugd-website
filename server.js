@@ -5,6 +5,7 @@ const mysql = require('mysql2');
 const winston = require('winston'); require('winston-daily-rotate-file');
 const config = require('./tamugd_config.js');
 
+// create logger
 const logger = winston.createLogger({
     level: 'info',
     format: 
@@ -28,14 +29,17 @@ const logger = winston.createLogger({
     ],
 });
 
+// create express instance
 const app = express();
 let responseCache = {};
-let syncing = false;
-let syncPercentage = '0';
+let building = false;
+let buildPercentage = '0';
 
+// trust one layer of proxies (cloudflare)
 app.set('trust proxy', 1);
 app.use(compression());
 
+// configure helmetjs for header hardening
 app.use(helmet({
     crossOriginEmbedderPolicy: false,
     contentSecurityPolicy: {
@@ -51,6 +55,7 @@ app.use(helmet({
     }
 }));
 
+// if given a referrer (which is not us) log it
 app.use((req, res, next) => {
     if (req.get['Referrer'] && req.get['Referrer'] != req.hostname) {
         const ip = ((req.get['cf-connecting-ip'] || req.ip)+'        ').slice(0,15);
@@ -59,15 +64,17 @@ app.use((req, res, next) => {
     next();
 });
 
+// set ./public as root directory
 app.use(express.static('public'));
 
+// set /favicon.ico as an alias to actual location
 app.get('/favicon.ico', (req, res) => res.status(200).sendFile(__dirname+'/public/img/favicon.ico'));
 
+// return information about the grade data in the database and database building progress
 app.get('/supported', (req, res) => {
     const ip = ((req.get['cf-connecting-ip'] || req.ip)+'        ').slice(0,15);
 
-    // check if database is syncing, if so, clear cache
-    {
+    { // check if database is building, if so, clear cache
         const conn = mysql.createConnection(config.databaseSettings);
         conn.connect((err) => {
             if (err) { logger.error(err); res.write('Backend Error', () => { res.end(); conn.end(); }); }
@@ -75,35 +82,34 @@ app.get('/supported', (req, res) => {
                 conn.query('SELECT * FROM '+config.statusTable+';', (err, result) => {
                     if (!err) {
                         if (result && result.length >= 2) {
-                            syncing = result[0].value;
-                            syncPercentage = result[1].value;
+                            building = result[0].value;
+                            buildPercentage = result[1].value;
                         }
                     }
                     conn.end();
                 });
             }
         });
-        if (syncing) responseCache = {};
+        if (building) responseCache = {};
     }
 
     // check cache for response, if not, generate and store response
-    if (!syncing && responseCache['supported']) {
+    if (!building && responseCache['supported']) {
         res.status(200).json(responseCache['supported']).end();
         logger.info(`[${ip}] [✔️ Cached] [GET ${req.url}]`);
     } else {
         const conn = mysql.createConnection(config.databaseSettings);
         conn.connect((err) => {
-            if (err) { logger.error(err); res.write('Backend Error', () => { res.end(); conn.end(); logger.info(`[${ip}] [❌ Queried] [GET ${req.url}]`); }); }
+            if (err) { logger.error(err); res.write('Backend Error', () => { res.end(); conn.end(); }); }
             else conn.query(`SELECT DISTINCT year FROM ${config.gradesTable};`, (err, result1) => {
-                if (err) { logger.error(err); res.write('Backend Error', () => { res.end(); conn.end(); logger.info(`[${ip}] [❌ Queried] [GET ${req.url}]`); }); }
+                if (err) { logger.error(err); res.write('Backend Error', () => { res.end(); conn.end(); }); }
                 else conn.query(`SELECT DISTINCT departmentName FROM ${config.gradesTable};`, (err, result2) => {
-                    if (err) { logger.error(err); res.write('Backend Error', () => { res.end(); logger.info(`[${ip}] [❌ Queried] [GET ${req.url}]`); }); }
+                    if (err) { logger.error(err); res.write('Backend Error', () => res.end()); }
                     else {
                         responseCache['supported'] = {
                             years: Object.values(result1).map(e => e.year),
                             departments: Object.values(result2).map(e => e.departmentName),
-                            syncing: syncing,
-                            syncPercentage: syncPercentage
+                            buildPercentage: buildPercentage
                         };
                         res.status(200).json(responseCache['supported']).end();
                     }
@@ -115,6 +121,7 @@ app.get('/supported', (req, res) => {
     }
 });
 
+// return information about queried course
 app.get('/search', (req, res) => {
     const ip = ((req.get['cf-connecting-ip'] || req.ip)+'        ').slice(0,15);
     
@@ -124,7 +131,7 @@ app.get('/search', (req, res) => {
         const queryString = dep+course;
         
         // check cache for response, if not, generate and store response
-        if (!syncing && responseCache[queryString]) {
+        if (!building && responseCache[queryString]) {
             res.status(200).json(responseCache[queryString]).end();
             logger.info(`[${ip}] [✔️ Cached] [GET ${req.url}]`);
         } else {
@@ -150,10 +157,13 @@ app.get('/search', (req, res) => {
     }
 });
 
+// default all other requests to the 404 page
 app.use((req, res) => res.status(404).sendFile('public/404.html', { root: __dirname }));
 
+// start the server
 app.listen(config.port, () => logger.info(`Server running on port: ${config.port}`));
 
+// handle sigint
 process.on('SIGINT', () => {
     logger.info('Gracefully shutting down from SIGINT (Ctrl-C)\n');
     process.exit(0);
