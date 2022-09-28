@@ -53,15 +53,6 @@ app.use(helmet({
     }
 }));
 
-// if given a referrer (which is not us) log it
-app.use((req, res, next) => {
-    if (req.get('Referrer') && req.get('Referrer') != req.hostname) {
-        const ip = ((req.headers['cf-connecting-ip'] || req.ip)+'        ').slice(0,15);
-        logger.info(`[${ip}] [Referrer: ${req.get('Referrer')}]`);
-    }
-    next();
-});
-
 // set ./public as root directory
 app.use(express.static('public'));
 
@@ -72,6 +63,10 @@ app.get('/favicon.ico', (req, res) => res.status(200).sendFile(__dirname+'/publi
 app.get('/supported', (req, res) => {
     const ip = ((req.headers['cf-connecting-ip'] || req.ip)+'        ').slice(0,15);
     let buildPercentage = '0';
+    let referrer = 'NOREF';
+
+    // if there is a referrer, add it to the log
+    if (req.get('Referrer')) referrer = req.get('Referrer');
 
     { // check if database is building, if so, clear cache
         const conn = mysql2.createConnection(config.databaseSettings);
@@ -87,7 +82,7 @@ app.get('/supported', (req, res) => {
     // check cache for response, if not, generate and store response
     if (RESPONSE_CACHE['supported']) {
         res.status(200).json(RESPONSE_CACHE['supported']).end();
-        logger.info(`[${ip}] [✔️ Cached] [GET ${req.url}]`);
+        logger.info(`[${ip}] [${referrer}] [✔️ Cached] [GET ${req.url}]`);
     } else {
         const conn = mysql2.createConnection(config.databaseSettings);
         conn.query(`SELECT DISTINCT year FROM ${config.gradesTable};`, (err, result1) => {
@@ -102,7 +97,7 @@ app.get('/supported', (req, res) => {
                     };
                     res.status(200).json(RESPONSE_CACHE['supported']).end();
                 }
-                logger.info(`[${ip}] [${(result1.length+result2.length)>0?'✔️':'❌'} Queried] [GET ${req.url}]`);
+                logger.info(`[${ip}] [${referrer}] [${(result1.length+result2.length)>0?'✔️':'❌'} Queried] [GET ${req.url}]`);
             });
         });
     }
@@ -144,7 +139,10 @@ app.get('/search', (req, res) => {
 });
 
 // default all other requests to the 404 page
-app.use((req, res) => res.status(404).sendFile('public/404.html', { root: __dirname }));
+app.use((req, res) => {
+    res.status(404).sendFile('public/404.html', { root: __dirname });
+    logger.info(`[${ip}] [❌ 404] [GET ${req.url}]`);
+});
 
 // start the server
 app.listen(config.port, () => logger.info(`Server running on port: ${config.port}`));
