@@ -55,9 +55,9 @@ app.use(helmet({
 
 // if given a referrer (which is not us) log it
 app.use((req, res, next) => {
-    if (req.get['Referrer'] && req.get['Referrer'] != req.hostname) {
-        const ip = ((req.get['cf-connecting-ip'] || req.ip)+'        ').slice(0,15);
-        logger.info(`[${ip}] [Referrer: ${req.get['Referrer']}]`);
+    if (req.get('Referrer') && req.get('Referrer') != req.hostname) {
+        const ip = ((req.headers['cf-connecting-ip'] || req.ip)+'        ').slice(0,15);
+        logger.info(`[${ip}] [Referrer: ${req.get('Referrer')}]`);
     }
     next();
 });
@@ -70,7 +70,7 @@ app.get('/favicon.ico', (req, res) => res.status(200).sendFile(__dirname+'/publi
 
 // return information about the grade data in the database and database building progress
 app.get('/supported', (req, res) => {
-    const ip = ((req.get['cf-connecting-ip'] || req.ip)+'        ').slice(0,15);
+    const ip = ((req.headers['cf-connecting-ip'] || req.ip)+'        ').slice(0,15);
     let buildPercentage = '0';
 
     { // check if database is building, if so, clear cache
@@ -110,7 +110,7 @@ app.get('/supported', (req, res) => {
 
 // return information about queried course
 app.get('/search', (req, res) => {
-    const ip = ((req.get['cf-connecting-ip'] || req.ip)+'        ').slice(0,15);
+    const ip = ((req.headers['cf-connecting-ip'] || req.ip)+'        ').slice(0,15);
     
     if(req.query['d'] && req.query['c']) {
         const dep = mysql2.escape(req.query['d'].replace(/[\W]+/g,'').toUpperCase().substring(0, 4));
