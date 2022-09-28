@@ -6,9 +6,9 @@ const config = {
         user     : 'database_username_here',
         password : 'database_password_here',
     },
-    gradesTable: 'tamugrades',
-    statusTable: 'status',
-    port       :  5000,
+    gradesTable : 'tamugrades',
+    statusTable : 'status',
+    port        :  5000,
 };
 
 module.exports = config;
