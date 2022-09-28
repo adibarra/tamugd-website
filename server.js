@@ -67,10 +67,10 @@ app.get('/supported', (req, res) => {
     const ip = ((req.get['cf-connecting-ip'] || req.ip)+'        ').slice(0,15);
 
     // check if database is syncing, if so, clear cache
-    () => {
+    {
         const conn = mysql.createConnection(config.databaseSettings);
         conn.connect((err) => {
-            if (err) { logger.error(err); res.write('Backend Error', () => { res.end(); }); }
+            if (err) { logger.error(err); res.write('Backend Error', () => { res.end(); conn.end(); }); }
             else {
                 conn.query('SELECT * FROM '+config.statusTable+';', (err, result) => {
                     if (!err) {
@@ -79,12 +79,12 @@ app.get('/supported', (req, res) => {
                             syncPercentage = result[1].value;
                         }
                     }
+                    conn.end();
                 });
             }
-            conn.end();
         });
         if (syncing) responseCache = {};
-    };
+    }
 
     // check cache for response, if not, generate and store response
     if (!syncing && responseCache['supported']) {
@@ -93,9 +93,9 @@ app.get('/supported', (req, res) => {
     } else {
         const conn = mysql.createConnection(config.databaseSettings);
         conn.connect((err) => {
-            if (err) { logger.error(err); res.write('Backend Error', () => { res.end(); }); }
+            if (err) { logger.error(err); res.write('Backend Error', () => { res.end(); conn.end(); }); }
             else conn.query(`SELECT DISTINCT year FROM ${config.gradesTable};`, (err, result1) => {
-                if (err) { logger.error(err); res.write('Backend Error', () => { res.end(); }); }
+                if (err) { logger.error(err); res.write('Backend Error', () => { res.end(); conn.end(); }); }
                 else conn.query(`SELECT DISTINCT departmentName FROM ${config.gradesTable};`, (err, result2) => {
                     if (err) { logger.error(err); res.write('Backend Error', () => res.end()); }
                     else {
@@ -106,11 +106,11 @@ app.get('/supported', (req, res) => {
                             syncPercentage: syncPercentage
                         };
                         res.status(200).json(responseCache['supported']).end();
+                        logger.info(`[${ip}] [${(result1.length+result2.length)>0?'✔️':'❌'} Queried] [GET ${req.url}]`);
                     }
-                    logger.info(`[${ip}] [${(result1.length+result2.length)>0?'✔️':'❌'} Queried] [GET ${req.url}]`);
+                    conn.end();
                 });
             });
-            conn.end();
         });
     }
 });
@@ -132,7 +132,7 @@ app.get('/search', (req, res) => {
             const sqlQuery = (`SELECT year,semester,professorName,section,honors,avgGPA,numA,numB,numC,numD,numF,numI,numS,numU,numQ,numX FROM 
                 ${config.gradesTable} WHERE (departmentName=${dep}) AND (course=${course});`);
             conn.connect((err) => {
-                if (err) { logger.error(err); res.write('Backend Error', () => { res.end(); }); }
+                if (err) { logger.error(err); res.write('Backend Error', () => { res.end(); conn.end();}); }
                 else conn.query(sqlQuery, (err, result) => {
                     if (err) { logger.error(err); res.write('Backend Error', () => res.end()); }
                     else {
@@ -140,8 +140,8 @@ app.get('/search', (req, res) => {
                         res.status(200).json(responseCache[queryString]).end();
                     }
                     logger.info(`[${ip}] [${result.length>0?'✔️':'❌'} Queried] [GET ${req.url}]`);
+                    conn.end();
                 });
-                conn.end();
             });
         }
     } else {
