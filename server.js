@@ -2,7 +2,17 @@ const express = require('express');
 const helmet = require('helmet');
 const compression = require('compression')
 const mysql = require('mysql2');
+const winston = require('winston');
 const config = require('./tamugd_config.js');
+
+const logger = winston.createLogger({
+    level: 'info',
+    format: winston.format.json(),
+    transports: [
+        //new winston.transports.File({ filename: 'logs/tamugd.log' }),
+        new winston.transports.Console({ format: winston.format.simple() }),
+    ],
+});
 
 const app = express();
 let responseCache = {};
@@ -12,7 +22,7 @@ let syncPercentage = '0';
 function checkSyncStatus() {
     const conn = mysql.createConnection(config.databaseSettings);
     conn.connect((err) => {
-        if (err) { console.log(err.toString); res.write('Backend Error', () => { res.end(); conn.end(); }); }
+        if (err) { logger.error(err.toString); res.write('Backend Error', () => { res.end(); conn.end(); }); }
         else {
             conn.query('SELECT * FROM '+config.statusTable+';', (err, result) => {
                 if (!err) {
@@ -47,13 +57,16 @@ app.use(helmet({
 }));
 
 app.use((req, res, next) => {
-    if (req.get('Referrer')) console.log(`[${req.ip}] [Referrer: ${req.get('Referrer')}]`);
+    const now = new Date();
+    const date = now.getFullYear()+'-'+('0'+(now.getMonth()+1)).slice(-2)+'-'+('0'+now.getDate()).slice(-2);
+    const time = ('0'+now.getHours()).slice(-2)+':'+('0'+now.getMinutes()).slice(-2)+':'+('0'+now.getSeconds()).slice(-2);
+    if (req.get('Referrer')) logger.info(`[${date}.${time}] [${req.ip}] [Referrer: ${req.get('Referrer')}]`);
     next();
 });
 
 app.use(express.static('public'));
 
-app.get('/favicon.ico', (req, res) => res.status(200).sendFile(__dirname+'/public/images/favicon.ico'));
+app.get('/favicon.ico', (req, res) => res.status(200).sendFile(__dirname+'/public/img/favicon.ico'));
 
 app.get('/supported', (req, res) => {
     const now = new Date();
@@ -66,15 +79,15 @@ app.get('/supported', (req, res) => {
     // check cache for response, if not, generate and store response
     if (!syncing && responseCache['supported']) {
         res.status(200).json(responseCache['supported']).end();
-        console.log(`[${date}.${time}] [${req.ip}] [SUCCESS (Cached)] [GET ${req.url}]`);
+        logger.info(`[${date}.${time}] [${req.ip}] [SUCCESS (Cached)] [GET ${req.url}]`);
     } else {
         const conn = mysql.createConnection(config.databaseSettings);
         conn.connect((err) => {
-            if (err) { console.log(err.toString); res.write('Backend Error', () => { res.end(); conn.end(); }); }
+            if (err) { logger.error(err.toString); res.write('Backend Error', () => { res.end(); conn.end(); }); }
             else conn.query(`SELECT DISTINCT year FROM ${config.gradesTable};`, (err, result1) => {
-                if (err) { console.log(err.toString); res.write('Backend Error', () => { res.end(); conn.end(); }); }
+                if (err) { logger.error(err.toString); res.write('Backend Error', () => { res.end(); conn.end(); }); }
                 else conn.query(`SELECT DISTINCT departmentName FROM ${config.gradesTable};`, (err, result2) => {
-                    if (err) { console.log(err.toString); res.write('Backend Error', () => res.end()); }
+                    if (err) { logger.error(err.toString); res.write('Backend Error', () => res.end()); }
                     else {
                         responseCache['supported'] = {
                             years: Object.values(result1).map(e => e.year),
@@ -84,7 +97,7 @@ app.get('/supported', (req, res) => {
                         };
                         res.status(200).json(responseCache['supported']).end();
                     }
-                    console.log(`[${date}.${time}] [${req.ip}] [${(result1.length+result2.length)>0?'SUCCESS':'FAILURE'} (Queried)] [GET ${req.url}]`);
+                    logger.info(`[${date}.${time}] [${req.ip}] [${(result1.length+result2.length)>0?'SUCCESS':'FAILURE'} (Queried)] [GET ${req.url}]`);
                     conn.end();
                 });
             });
@@ -96,38 +109,44 @@ app.get('/search', (req, res) => {
     const now = new Date();
     const date = now.getFullYear()+'-'+('0'+(now.getMonth()+1)).slice(-2)+'-'+('0'+now.getDate()).slice(-2);
     const time = ('0'+now.getHours()).slice(-2)+':'+('0'+now.getMinutes()).slice(-2)+':'+('0'+now.getSeconds()).slice(-2);
-    const dep = mysql.escape(req.query['d'].replace(/[\W]+/g,'').toUpperCase().substring(0, 4));
-    const course = mysql.escape(req.query['c'].replace(/[\W]+/g,'').toUpperCase().substring(0, 3));
-    const queryString = dep+course;
     
-    // check cache for response, if not, generate and store response
-    if (!syncing && responseCache[queryString]) {
-        res.status(200).json(responseCache[queryString]).end();
-        console.log(`[${date}.${time}] [${req.ip}] [SUCCESS (Cached)] [GET ${req.url}]`);
-    } else {
-        const conn = mysql.createConnection(config.databaseSettings);
-        const sqlQuery = (`SELECT year,semester,professorName,section,honors,avgGPA,numA,numB,numC,numD,numF,numI,numS,numU,numQ,numX FROM 
-            ${config.gradesTable} WHERE (departmentName=${dep}) AND (course=${course});`);
-        conn.connect((err) => {
-            if (err) { console.log(err.toString); res.write('Backend Error', () => { res.end(); conn.end(); }); }
-            else conn.query(sqlQuery, (err, result) => {
-                if (err) { console.log(err.toString); res.write('Backend Error', () => res.end()); }
-                else {
-                    responseCache[queryString] = result;
-                    res.status(200).json(responseCache[queryString]).end();
-                }
-                console.log(`[${date}.${time}] [${req.ip}] [${result.length>0?'SUCCESS':'FAILURE'} (Queried)] [GET ${req.url}]`);
-                conn.end();
+    if(req.query['d'] && req.query['c']) {
+        const dep = mysql.escape(req.query['d'].replace(/[\W]+/g,'').toUpperCase().substring(0, 4));
+        const course = mysql.escape(req.query['c'].replace(/[\W]+/g,'').toUpperCase().substring(0, 3));
+        const queryString = dep+course;
+        
+        // check cache for response, if not, generate and store response
+        if (!syncing && responseCache[queryString]) {
+            res.status(200).json(responseCache[queryString]).end();
+            logger.info(`[${date}.${time}] [${req.ip}] [SUCCESS (Cached)] [GET ${req.url}]`);
+        } else {
+            const conn = mysql.createConnection(config.databaseSettings);
+            const sqlQuery = (`SELECT year,semester,professorName,section,honors,avgGPA,numA,numB,numC,numD,numF,numI,numS,numU,numQ,numX FROM 
+                ${config.gradesTable} WHERE (departmentName=${dep}) AND (course=${course});`);
+            conn.connect((err) => {
+                if (err) { logger.error(err.toString); res.write('Backend Error', () => { res.end(); conn.end(); }); }
+                else conn.query(sqlQuery, (err, result) => {
+                    if (err) { logger.error(err.toString); res.write('Backend Error', () => res.end()); }
+                    else {
+                        responseCache[queryString] = result;
+                        res.status(200).json(responseCache[queryString]).end();
+                    }
+                    logger.info(`[${date}.${time}] [${req.ip}] [${result.length>0?'SUCCESS':'FAILURE'} (Queried)] [GET ${req.url}]`);
+                    conn.end();
+                });
             });
-        });
+        }
+    } else {
+        logger.info(`[${date}.${time}] [${req.ip}] Missing Parameters [GET ${req.url}]`);
+        res.write('Missing Parameters Error', () => res.end());
     }
 });
 
 app.use((req, res) => res.status(404).sendFile('public/404.html', { root: __dirname }));
 
-app.listen(config.port, () => console.log(`Server running on port: ${config.port}`));
+app.listen(config.port, () => logger.info(`Server running on port: ${config.port}`));
 
 process.on('SIGINT', () => {
-    console.log('\nGracefully shutting down from SIGINT (Ctrl-C)');
+    logger.info('\nGracefully shutting down from SIGINT (Ctrl-C)');
     process.exit(0);
 });
