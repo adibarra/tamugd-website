@@ -1,6 +1,6 @@
+const compression = require('compression');
 const express = require('express');
 const helmet = require('helmet');
-const compression = require('compression')
 const mysql2 = require('mysql2/promise');
 const winston = require('winston'); require('winston-daily-rotate-file');
 const config = require('./tamugd_config.js');
@@ -9,7 +9,7 @@ const config = require('./tamugd_config.js');
 const logger = winston.createLogger({
     level: 'info',
     format: 
-        winston.format.printf(({ level, message }) => {
+        winston.format.printf(({ message }) => {
             const now = new Date();
             const date = now.getFullYear()+'-'+('0'+(now.getMonth()+1)).slice(-2)+'-'+('0'+now.getDate()).slice(-2);
             const time = ('0'+now.getHours()).slice(-2)+':'+('0'+now.getMinutes()).slice(-2)+':'+('0'+now.getSeconds()).slice(-2);
@@ -74,20 +74,14 @@ app.get('/supported', async (req, res) => {
     try {
         const conn = await mysql2.createConnection(config.databaseSettings);
         const [rows1] = await conn.execute(`SELECT * FROM ${config.statusTable};`);
-        const [rows2] = await conn.execute(`SELECT DISTINCT year FROM ${config.gradesTable};`);
-        const [rows3] = await conn.execute(`SELECT DISTINCT departmentName FROM ${config.gradesTable};`);
-        conn.end();
 
-        // reset cache if currently building db
-        if (Number(rows1[0].value) < 100) RESPONSE_CACHE = {};
+        // if currently building db
+        if (Number(rows1[0].value) < 100) {
+            const [rows2] = await conn.execute(`SELECT DISTINCT year FROM ${config.gradesTable};`);
+            const [rows3] = await conn.execute(`SELECT DISTINCT departmentName FROM ${config.gradesTable};`);
 
-        // check for cached response
-        if (RESPONSE_CACHE['supported']) {
-            res.status(200).json(RESPONSE_CACHE['supported']).end();
-            logger.info(`[${fip}] [✔️ Cached] [GET /supported]`);
-
-        // generate and cache response
-        } else if (rows2 && rows3) {
+            // generate and cache response
+            RESPONSE_CACHE = {};
             RESPONSE_CACHE['supported'] = {
                 years: Object.values(rows2).map(e => e.year),
                 departments: Object.values(rows3).map(e => e.departmentName),
@@ -95,9 +89,15 @@ app.get('/supported', async (req, res) => {
             };
             res.status(200).json(RESPONSE_CACHE['supported']).end();
             logger.info(`[${fip}] [${(rows2.length+rows3.length)>0?'✔️':'❌'} Queried] [GET /supported]`);
+        }
 
-        // uh oh...
-        } else logger.info(`[${fip}] [❌ Queried] [GET /supported]`);
+        // get cached response
+        else {
+            res.status(200).json(RESPONSE_CACHE['supported']).end();
+            logger.info(`[${fip}] [✔️ Cached] [GET /supported]`);
+        }
+
+        conn.end();
 
     // catch and log errors, notify frontend
     } catch (err) {
