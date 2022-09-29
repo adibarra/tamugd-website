@@ -1,7 +1,7 @@
 const express = require('express');
 const helmet = require('helmet');
 const compression = require('compression')
-const mysql2 = require('mysql2');
+const mysql2 = require('mysql2/promise');
 const winston = require('winston'); require('winston-daily-rotate-file');
 const config = require('./tamugd_config.js');
 
@@ -67,75 +67,80 @@ app.use(express.static('public'));
 app.get('/favicon.ico', (req, res) => res.status(200).sendFile(__dirname+'/public/img/favicon.ico'));
 
 // return information about the grade data in the database and database building progress
-app.get('/supported', (req, res) => {
+app.get('/supported', async (req, res) => {
     const ip = ((req.headers['cf-connecting-ip'] || req.ip)+'        ').slice(0,15);
-    let buildPercentage = '0';
+    try {
+        const conn = await mysql2.createConnection(config.databaseSettings);
+        const [rows1, _] = await conn.execute(`SELECT * FROM ${config.statusTable};`);
+        const [rows2, __] = await conn.execute(`SELECT DISTINCT year FROM ${config.gradesTable};`);
+        const [rows3, ___] = await conn.execute(`SELECT DISTINCT departmentName FROM ${config.gradesTable};`);
+        const buildPercentage = Number(rows1[0].value);
 
-    { // check if database is building, if so, clear cache
-        const conn = mysql2.createConnection(config.databaseSettings);
-        conn.query('SELECT * FROM '+config.statusTable+';', (err, result) => {
-            if (err) { logger.error(err); res.write('Backend Error', () => { res.end(); }); }
-            else if (result && result.length > 0) buildPercentage = result[0].value;
-        });
-        if (buildPercentage !== '100') RESPONSE_CACHE = {};
-    }
+        // reset cache if currently building db
+        if (buildPercentage < 100) RESPONSE_CACHE = {};
 
-    // check cache for response, if not, generate and store response
-    if (RESPONSE_CACHE['supported']) {
-        res.status(200).json(RESPONSE_CACHE['supported']).end();
-        logger.info(`[${ip}] [✔️ Cached] [GET ${req.url}]`);
-    } else {
-        const conn = mysql2.createConnection(config.databaseSettings);
-        conn.query(`SELECT DISTINCT year FROM ${config.gradesTable};`, (err, result1) => {
-            if (err) { logger.error(err); res.write('Backend Error', () => { res.end(); }); }
-            else conn.query(`SELECT DISTINCT departmentName FROM ${config.gradesTable};`, (err, result2) => {
-                if (err) { logger.error(err); res.write('Backend Error', () => res.end()); }
-                else {
-                    RESPONSE_CACHE['supported'] = {
-                        years: Object.values(result1).map(e => e.year),
-                        departments: Object.values(result2).map(e => e.departmentName),
-                        buildPercentage: buildPercentage
-                    };
-                    res.status(200).json(RESPONSE_CACHE['supported']).end();
-                }
-                logger.info(`[${ip}] [${(result1.length+result2.length)>0?'✔️':'❌'} Queried] [GET ${req.url}]`);
-            });
-        });
+        // check for cached response
+        if (RESPONSE_CACHE['supported']) {
+            res.status(200).json(RESPONSE_CACHE['supported']).end();
+            logger.info(`[${ip}] [✔️ Cached] [GET ${req.url}]`);
+
+        // generate and cache response
+        } else if (rows2 && rows3) {
+            RESPONSE_CACHE['supported'] = {
+                years: Object.values(rows2).map(e => e.year),
+                departments: Object.values(rows3).map(e => e.departmentName),
+                buildPercentage: buildPercentage
+            };
+            res.status(200).json(RESPONSE_CACHE['supported']).end();
+            logger.info(`[${ip}] [${(rows2.length+rows3.length)>0?'✔️':'❌'} Queried] [GET ${req.url}]`);
+
+        // uh oh...
+        } else logger.info(`[${ip}] [❌ Queried] [GET ${req.url}]`);
+
+        conn.end();
+
+    } catch (err) {
+        res.write('Backend Error', () => res.end());
+        logger.info(`[${ip}] ${err.stack}`);
     }
 });
 
 // return information about queried course
-app.get('/search', (req, res) => {
+app.get('/search', async (req, res) => {
     const ip = ((req.headers['cf-connecting-ip'] || req.ip)+'        ').slice(0,15);
-    
-    if(req.query['d'] && req.query['c']) {
-        const dep = mysql2.escape(req.query['d'].replace(/[\W]+/g,'').toUpperCase().substring(0, 4));
-        const course = mysql2.escape(req.query['c'].replace(/[\W]+/g,'').toUpperCase().substring(0, 3));
-        const queryString = dep+course;
-        
-        // check cache for response, if not, generate and store response
-        if (RESPONSE_CACHE[queryString]) {
-            res.status(200).json(RESPONSE_CACHE[queryString]).end();
-            logger.info(`[${ip}] [✔️ Cached] [GET ${req.url}]`);
+    try {
+        if(req.query['d'] && req.query['c']) {
+            const conn = await mysql2.createConnection(config.databaseSettings);
+            const dep = mysql2.escape(req.query['d'].replace(/[\W]+/g,'').toUpperCase().substring(0, 4));
+            const course = mysql2.escape(req.query['c'].replace(/[\W]+/g,'').toUpperCase().substring(0, 3));
+            const queryString = dep+course;
+
+            // check for cached response
+            if (RESPONSE_CACHE[queryString]) {
+                res.status(200).json(RESPONSE_CACHE[queryString]).end();
+                logger.info(`[${ip}] [✔️ Cached] [GET ${req.url}]`);
+
+            // generate and cache response
+            } else {
+                const [rows, _] = await conn.execute(`SELECT year,semester,professorName,section,honors,avgGPA,numA,numB,numC,numD,numF,numI,numS,numU,numQ,numX FROM 
+                    ${config.gradesTable} WHERE (departmentName=${dep}) AND (course=${course});`);
+
+                RESPONSE_CACHE[queryString] = rows;
+                res.status(200).json(RESPONSE_CACHE[queryString]).end();
+                logger.info(`[${ip}] [${rows.length>0?'✔️':'❌'} Queried] [GET ${req.url}]`);
+            }
+
+            conn.end();
+
+        // missing some search parameters, send client an error
         } else {
-            const conn = mysql2.createConnection(config.databaseSettings);
-            const sqlQuery = (`SELECT year,semester,professorName,section,honors,avgGPA,numA,numB,numC,numD,numF,numI,numS,numU,numQ,numX FROM 
-                ${config.gradesTable} WHERE (departmentName=${dep}) AND (course=${course});`);
-            conn.connect((err) => {
-                if (err) { logger.error(err); res.write('Backend Error', () => { res.end();}); }
-                else conn.query(sqlQuery, (err, result) => {
-                    if (err) { logger.error(err); res.write('Backend Error', () => res.end()); }
-                    else {
-                        RESPONSE_CACHE[queryString] = result;
-                        res.status(200).json(RESPONSE_CACHE[queryString]).end();
-                    }
-                    logger.info(`[${ip}] [${result.length>0?'✔️':'❌'} Queried] [GET ${req.url}]`);
-                });
-            });
+            res.write('Frontend Error: Missing departmentName or course', () => res.end());
+            logger.info(`[${ip}] [❌ Missing Search Parameters] [GET ${req.url}]`);
         }
-    } else {
-        logger.info(`[${ip}] [❌ Missing Search Parameters] [GET ${req.url}]`);
-        res.write('Frontend Error: Missing departmentName or course', () => res.end());
+
+    } catch (err) {
+        logger.info(`[${ip}] ${err.stack}`);
+        res.write('Backend Error', () => res.end());
     }
 });
 
