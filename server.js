@@ -54,9 +54,10 @@ app.use(helmet({
 }));
 
 // get referer if available
-app.use('/', (req, res, next) => {
-    const ip = ((req.headers['cf-connecting-ip'] || req.ip)+'        ').slice(0,15);
-    if (req.get('Referer')) logger.info(`[${ip}] [Refered By: ${req.get('Referer')}]`);
+app.use('/', async (req, res, next) => {
+    const ip = (req.headers['cf-connecting-ip'] || req.ip);
+    const fip = ip.length>14 ? ip : ip.split('.').map(n => ('00'+n).slice(-3)).join('.');
+    if (req.get('Referer')) logger.info(`[${fip}] [Refered By: ${req.get('Referer')}]`);
     next();
 });
 
@@ -64,91 +65,93 @@ app.use('/', (req, res, next) => {
 app.use(express.static('public'));
 
 // set /favicon.ico as an alias to actual location
-app.get('/favicon.ico', (req, res) => res.status(200).sendFile(__dirname+'/public/img/favicon.ico'));
+app.get('/favicon.ico', async (req, res) => res.status(200).sendFile(__dirname+'/public/img/favicon.ico'));
 
 // return information about the grade data in the database and database building progress
 app.get('/supported', async (req, res) => {
-    const ip = ((req.headers['cf-connecting-ip'] || req.ip)+'        ').slice(0,15);
+    const ip = (req.headers['cf-connecting-ip'] || req.ip);
+    const fip = ip.length>14 ? ip : ip.split('.').map(n => ('00'+n).slice(-3)).join('.');
     try {
         const conn = await mysql2.createConnection(config.databaseSettings);
-        const [rows1, _] = await conn.execute(`SELECT * FROM ${config.statusTable};`);
-        const [rows2, __] = await conn.execute(`SELECT DISTINCT year FROM ${config.gradesTable};`);
-        const [rows3, ___] = await conn.execute(`SELECT DISTINCT departmentName FROM ${config.gradesTable};`);
-        const buildPercentage = Number(rows1[0].value);
+        const [rows1] = await conn.execute(`SELECT * FROM ${config.statusTable};`);
+        const [rows2] = await conn.execute(`SELECT DISTINCT year FROM ${config.gradesTable};`);
+        const [rows3] = await conn.execute(`SELECT DISTINCT departmentName FROM ${config.gradesTable};`);
+        conn.end();
 
         // reset cache if currently building db
-        if (buildPercentage < 100) RESPONSE_CACHE = {};
+        if (Number(rows1[0].value) < 100) RESPONSE_CACHE = {};
 
         // check for cached response
         if (RESPONSE_CACHE['supported']) {
             res.status(200).json(RESPONSE_CACHE['supported']).end();
-            logger.info(`[${ip}] [✔️ Cached] [GET ${req.url}]`);
+            logger.info(`[${fip}] [✔️ Cached] [GET /supported]`);
 
         // generate and cache response
         } else if (rows2 && rows3) {
             RESPONSE_CACHE['supported'] = {
                 years: Object.values(rows2).map(e => e.year),
                 departments: Object.values(rows3).map(e => e.departmentName),
-                buildPercentage: buildPercentage
+                buildPercentage: Number(rows1[0].value)
             };
             res.status(200).json(RESPONSE_CACHE['supported']).end();
-            logger.info(`[${ip}] [${(rows2.length+rows3.length)>0?'✔️':'❌'} Queried] [GET ${req.url}]`);
+            logger.info(`[${fip}] [${(rows2.length+rows3.length)>0?'✔️':'❌'} Queried] [GET /supported]`);
 
         // uh oh...
-        } else logger.info(`[${ip}] [❌ Queried] [GET ${req.url}]`);
+        } else logger.info(`[${fip}] [❌ Queried] [GET /supported]`);
 
-        conn.end();
-
+    // catch and log errors, notify frontend
     } catch (err) {
         res.write('Backend Error', () => res.end());
-        logger.info(`[${ip}] ${err.stack}`);
+        logger.info(`[${fip}] ${err.stack}`);
     }
 });
 
 // return information about queried course
 app.get('/search', async (req, res) => {
-    const ip = ((req.headers['cf-connecting-ip'] || req.ip)+'        ').slice(0,15);
+    const ip = (req.headers['cf-connecting-ip'] || req.ip);
+    const fip = ip.length>14 ? ip : ip.split('.').map(n => ('00'+n).slice(-3)).join('.');
     try {
+        // check if we received both search parameters
         if(req.query['d'] && req.query['c']) {
-            const conn = await mysql2.createConnection(config.databaseSettings);
-            const dep = mysql2.escape(req.query['d'].replace(/[\W]+/g,'').toUpperCase().substring(0, 4));
-            const course = mysql2.escape(req.query['c'].replace(/[\W]+/g,'').toUpperCase().substring(0, 3));
+            const dep = req.query['d'].replace(/[^a-zA-Z\d:]/g,'').toUpperCase().substring(0, 4);
+            const course = req.query['c'].replace(/[^a-zA-Z\d:]/g,'').toUpperCase().substring(0, 3);
             const queryString = dep+course;
 
             // check for cached response
             if (RESPONSE_CACHE[queryString]) {
                 res.status(200).json(RESPONSE_CACHE[queryString]).end();
-                logger.info(`[${ip}] [✔️ Cached] [GET ${req.url}]`);
+                logger.info(`[${fip}] [✔️ Cached] [GET /search] [${queryString}]`);
 
             // generate and cache response
             } else {
-                const [rows, _] = await conn.execute(`SELECT year,semester,professorName,section,honors,avgGPA,numA,numB,numC,numD,numF,numI,numS,numU,numQ,numX FROM 
-                    ${config.gradesTable} WHERE (departmentName=${dep}) AND (course=${course});`);
+                const conn = await mysql2.createConnection(config.databaseSettings);
+                const [rows] = await conn.execute(`SELECT year,semester,professorName,section,honors,avgGPA,numA,numB,numC,numD,numF,numI,numS,numU,numQ,numX FROM ${config.gradesTable} WHERE (departmentName="${dep}") AND (course="${course}");`);
+                conn.end();
 
                 RESPONSE_CACHE[queryString] = rows;
                 res.status(200).json(RESPONSE_CACHE[queryString]).end();
-                logger.info(`[${ip}] [${rows.length>0?'✔️':'❌'} Queried] [GET ${req.url}]`);
+                logger.info(`[${fip}] [${rows.length>0?'✔️':'❌'} Queried] [GET /search] [${queryString}]`);
             }
-
-            conn.end();
 
         // missing some search parameters, send client an error
         } else {
             res.write('Frontend Error: Missing departmentName or course', () => res.end());
-            logger.info(`[${ip}] [❌ Missing Search Parameters] [GET ${req.url}]`);
+            logger.info(`[${fip}] [❌ Missing Search Parameters] [GET ${req.url}]`);
         }
 
+    // catch and log errors, notify frontend
     } catch (err) {
-        logger.info(`[${ip}] ${err.stack}`);
+        logger.info(`[${fip}] ${err.stack}`);
         res.write('Backend Error', () => res.end());
     }
 });
 
 // default all other requests to the 404 page
-app.use((req, res) => {
+app.use(async (req, res) => {
     res.status(404).sendFile('public/404.html', { root: __dirname });
-    const ip = ((req.headers['cf-connecting-ip'] || req.ip)+'        ').slice(0,15);
-    logger.info(`[${ip}] [❌ 404] [GET ${req.url}]`);
+    const ip = (req.headers['cf-connecting-ip'] || req.ip);
+    const fip = ip.length>14 ? ip : ip.split('.').map(n => ('00'+n).slice(-3)).join('.');
+    logger.info(`[${fip}] [❌ 404] [GET ${req.url}]`);
 });
 
 // start the server
