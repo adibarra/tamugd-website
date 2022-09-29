@@ -33,7 +33,7 @@ const logger = winston.createLogger({
 const app = express();
 let RESPONSE_CACHE = {};
 
-// trust one layer of proxies (cloudflare)
+// trust one layer of proxies (cf)
 app.set('trust proxy', 1);
 app.use(compression());
 
@@ -50,13 +50,14 @@ app.use(helmet({
             "font-src": ["'self'", 'https://stackpath.bootstrapcdn.com/font-awesome/', 'https://fonts.gstatic.com/s/'],
             "img-src": ["'self'", 'data:', 'https://www.google-analytics.com/g/']
         }
-    }
+    },
+    referrerPolicy: 'origin'
 }));
 
 // get referer if available
 app.use('/', async (req, res, next) => {
     const ip = (req.headers['cf-connecting-ip'] || req.ip);
-    const fip = ip.length>14 ? ip : ip.split('.').map(n => ('00'+n).slice(-3)).join('.');
+    const fip = ip.split(ip.length>15?':':'.').map(n => ('000'+n).slice(ip.length>15?-4:-3)).join(ip.length>15?':':'.');
     if (req.get('Referer')) logger.info(`[${fip}] [Refered By: ${req.get('Referer')}]`);
     next();
 });
@@ -70,7 +71,7 @@ app.get('/favicon.ico', async (req, res) => res.status(200).sendFile(__dirname+'
 // return information about the grade data in the database and database building progress
 app.get('/supported', async (req, res) => {
     const ip = (req.headers['cf-connecting-ip'] || req.ip);
-    const fip = ip.length>14 ? ip : ip.split('.').map(n => ('00'+n).slice(-3)).join('.');
+    const fip = ip.split(ip.length>15?':':'.').map(n => ('000'+n).slice(ip.length>15?-4:-3)).join(ip.length>15?':':'.');
     try {
         const conn = await mysql2.createConnection(config.databaseSettings);
         const [rows1] = await conn.execute(`SELECT * FROM ${config.statusTable};`);
@@ -109,7 +110,7 @@ app.get('/supported', async (req, res) => {
 // return information about queried course
 app.get('/search', async (req, res) => {
     const ip = (req.headers['cf-connecting-ip'] || req.ip);
-    const fip = ip.length>14 ? ip : ip.split('.').map(n => ('00'+n).slice(-3)).join('.');
+    const fip = ip.split(ip.length>15?':':'.').map(n => ('000'+n).slice(ip.length>15?-4:-3)).join(ip.length>15?':':'.');
     try {
         // check if we received both search parameters
         if(req.query['d'] && req.query['c']) {
@@ -150,7 +151,7 @@ app.get('/search', async (req, res) => {
 app.use(async (req, res) => {
     res.status(404).sendFile('public/404.html', { root: __dirname });
     const ip = (req.headers['cf-connecting-ip'] || req.ip);
-    const fip = ip.length>14 ? ip : ip.split('.').map(n => ('00'+n).slice(-3)).join('.');
+    const fip = ip.split(ip.length>15?':':'.').map(n => ('000'+n).slice(ip.length>15?-4:-3)).join(ip.length>15?':':'.');
     logger.info(`[${fip}] [❌ 404] [GET ${req.url}]`);
 });
 
