@@ -39,7 +39,7 @@ document.addEventListener('DOMContentLoaded', () => {
         position: 'bottom', width: $('#course_difficulty_chart_canvas').width(), tooltipHover: true,
         titleBackground: 'rgba(102,102,102,.66)', background: 'rgba(102,102,102,.66)', titleContent: 'How to interpret:',
         content: 'This chart takes a few of the statistics for the course and plugs them into the following <span class="color-white">'
-        +'<a href="https://github.com/TAMU-GradeDistribution/TAMU-GradeDistribution-Website/blob/main/public/scripts/main.js#L517">'
+        +'<a href="https://github.com/TAMU-GradeDistribution/tamugd-website/blob/main/public/scripts/main.js#L522">'
         +' formula</a></span> to determine a relative difficulty score for each course.'
     });
 
@@ -55,14 +55,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
     courseGPAChartPlaceholderDataset = [
         { label: 'Professor 1', data: [1.2,1.8,undefined,3.1,3.2,3.0,3.3,3.6,2.5,2.9,undefined,undefined,3.0,2.6,3.2,3.6,3.7,3.5], fill: false, borderColor: '#666666', backgroundColor: '#66666680', tension: 0.1, borderWidth: 2, segment: { borderDash: ctx => skipped(ctx, [6, 6]) } },
-        { label: 'Professor 2', data: [3.2,2.8,3.2,2.6,2.3,undefined,undefined,3.2,3.5,3.6,3.4,2.6,2.9,3.1,3.4,2.75,2.9,2.8], fill: false, borderColor: '#9944FF', backgroundColor: '#9944FF80', tension: 0.1, borderWidth: 2, segment: { borderDash: ctx => skipped(ctx, [6, 6]) } },
-        { label: 'Professor 3', data: [2.2,3.8,2.6,3.2,2.6,3.6,2.7,2.1,2.2,1.6,1.45,2.1,2.2,1.45,1.6,2.1,2.3,2.6], fill: false, borderColor: '#CC77CC', backgroundColor: '#CC77CC80', tension: 0.1, borderWidth: 2, segment: { borderDash: ctx => skipped(ctx, [6, 6]) } },
-        { label: 'Professor 4', data: [1.5,1.6,1.4,1.8,1.3,1.4,1.9,1.7,1.5,1.5,1.7,1.8,2.0,2.1,1.95,1.7,1.5,1.25], fill: false, borderColor: '#77CC77', backgroundColor: '#77CC7780', tension: 0.1, borderWidth: 2, segment: { borderDash: ctx => skipped(ctx, [6, 6]) } }
+        { label: 'Professor 2', data: [3.2,2.8,3.2,2.6,2.3,undefined,undefined,3.2,3.5,3.6,3.4,2.6,2.9,3.1,3.4,2.75,2.6,2.4], fill: false, borderColor: '#9944FF', backgroundColor: '#9944FF80', tension: 0.1, borderWidth: 2, segment: { borderDash: ctx => skipped(ctx, [6, 6]) } },
+        { label: 'Professor 3', data: [2.2,3.8,2.6,3.2,2.6,3.6,2.7,2.1,2.2,1.6,1.45,2.1,2.2,1.45,1.6,2.1,2.4,2.85], fill: false, borderColor: '#CC77CC', backgroundColor: '#CC77CC80', tension: 0.1, borderWidth: 2, segment: { borderDash: ctx => skipped(ctx, [6, 6]) } },
+        { label: 'Professor 4', data: [1.5,1.6,1.4,1.8,1.3,1.4,1.9,1.7,1.5,1.5,1.7,1.8,2.0,2.1,1.95,1.7,1.5,1.4], fill: false, borderColor: '#77CC77', backgroundColor: '#77CC7780', tension: 0.1, borderWidth: 2, segment: { borderDash: ctx => skipped(ctx, [6, 6]) } }
     ];
     courseGPAChart = new Chart(ctx = $('#gpa_chart_canvas')[0].getContext('2d'), {
         type: 'line',
         data: {
-            labels: getGPAChartLabels([2014,2021], ['SPRING','FALL']),
+            labels: getGPAChartLabels([2014,2022], ['SPRING','FALL']),
             datasets: courseGPAChartPlaceholderDataset
         },
         options: {

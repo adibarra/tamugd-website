@@ -121,9 +121,8 @@ label:focus {
     position: absolute;
     width: 1.25em;
     height: 1.5em;
-    line-height: 1.2em;
     font-size: 1.2em;
-    top: .2em;
+    top: .25em;
     left: -1.25em;
 }
 .menu label.menu-toggle i {
@@ -289,7 +288,20 @@ label:focus {
     padding: .25em 1em 1em 1em;
     box-shadow: 0 0 5px 0 rgba(0,0,0,.1);
 }
-
+.spin-hover:hover {
+    -webkit-animation: spin 2.5s infinite linear;
+    -moz-animation: spin 2.5s infinite linear;
+    -o-animation: spin 2.5s infinite linear;
+    animation: spin 2.5s infinite linear;
+}
+@-webkit-keyframes spin {
+    0% { -webkit-transform: rotate(0deg); transform: rotate(0deg); }
+    100% { -webkit-transform: rotate(359deg); transform: rotate(359deg); }
+}
+@keyframes spin {
+    0% { -webkit-transform: rotate(0deg); transform: rotate(0deg); }
+    100% { -webkit-transform: rotate(359deg); transform: rotate(359deg); }
+}
 @media screen and (min-width:  0px) {
     html,body,h1,h2,h3 { font-size: 14px; }
     h1 { font-size: 25px; }

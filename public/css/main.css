@@ -79,24 +79,28 @@
         border: 1px solid var(--border-color);
         box-shadow: 0 22px 35px -16px rgba(0,0,0,0.1);
         border-radius: 5px;
+        overflow: hidden;
     }
     .course-range-chart-container {
         height: 100px;
         text-align: center;
         border: 1px solid var(--border-color);
         border-radius: 5px;
+        overflow: hidden;
     }
     .course-stats-letter-container {
         height: 100px;
         text-align: center;
         border: 1px solid var(--border-color);
         border-radius: 5px;
+        overflow: hidden;
     }
     .course-stats-difficulty-container {
         height: 100px;
         text-align: center;
         border: 1px solid var(--border-color);
         border-radius: 5px;
+        overflow: hidden;
     }
     th.gridjs-th,td.gridjs-td {
         background-color: var(--foreground1-color);
