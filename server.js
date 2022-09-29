@@ -75,8 +75,8 @@ app.get('/supported', async (req, res) => {
         const conn = await mysql2.createConnection(config.databaseSettings);
         const [rows1] = await conn.execute(`SELECT * FROM ${config.statusTable};`);
 
-        // if currently building db
-        if (Number(rows1[0].value) < 100) {
+        // if currently building db or not cached
+        if (Number(rows1[0].value) < 100 || !RESPONSE_CACHE['supported']) {
             const [rows2] = await conn.execute(`SELECT DISTINCT year FROM ${config.gradesTable};`);
             const [rows3] = await conn.execute(`SELECT DISTINCT departmentName FROM ${config.gradesTable};`);
 
