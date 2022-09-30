@@ -220,7 +220,6 @@ function requestSupported() {
             response.json().then(responseJSON => {
                 allYears = responseJSON.years.sort();
                 allDepartments = responseJSON.departments.sort();
-                console.log(responseJSON.buildPercentage)
                 $('#build_banner').toggleClass('hidden', Boolean(responseJSON.buildPercentage == 100));
                 $('#build_percentage').text(responseJSON.buildPercentage);
                 responseCache['supported'] = { 'query': 'supported', 'years': allYears, 'departments': allDepartments };
@@ -238,8 +237,9 @@ function requestSearch(department, course) {
         course = course.toUpperCase();
         const query = `search?d=${department}&c=${course}`;
 
-        if (responseCache[query]) {
-            if (responseCache[query] === null) reject(`Course ${department} ${course} not found!`);
+        if (typeof responseCache[query] !== "undefined") {
+            if (responseCache[query] === null)
+                reject(`Course ${department} ${course} not found!`);
             courseDataAll = responseCache[query];
             filterCourseData();
             resolve('Found in cache');

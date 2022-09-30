@@ -54,11 +54,11 @@ app.use(helmet({
     referrerPolicy: 'origin'
 }));
 
-// get referer if available
+// get referrer if available
 app.use('/', async (req, res, next) => {
     const ip = (req.headers['cf-connecting-ip'] || req.ip);
     const fip = ip.split(ip.length>15?':':'.').map(n => ('000'+n).slice(ip.length>15?-4:-3)).join(ip.length>15?':':'.');
-    if (req.get('Referer')) logger.info(`[${fip}] [Refered By: ${req.get('Referer')}]`);
+    if (req.get('Referrer')) logger.info(`[${fip}] [Referred By: ${req.get('Referrer')}]`);
     next();
 });
 
@@ -92,10 +92,31 @@ app.get('/supported', async (req, res) => {
             logger.info(`[${fip}] [${(rows2.length+rows3.length)>0?'✔️':'❌'} Queried] [GET /supported]`);
         }
 
-        // get cached response
-        else {
-            res.status(200).json(RESPONSE_CACHE['supported']).end();
-            logger.info(`[${fip}] [✔️ Cached] [GET /supported]`);
+        // if response is cached
+        else if (RESPONSE_CACHE['supported']) {
+
+            // check if cache is stale
+            if(RESPONSE_CACHE['supported'].buildPercentage < 100) {
+                const [rows2] = await conn.execute(`SELECT DISTINCT year FROM ${config.gradesTable};`);
+                const [rows3] = await conn.execute(`SELECT DISTINCT departmentName FROM ${config.gradesTable};`);
+
+                // generate and cache response
+                RESPONSE_CACHE = {};
+                RESPONSE_CACHE['supported'] = {
+                    years: Object.values(rows2).map(e => e.year),
+                    departments: Object.values(rows3).map(e => e.departmentName),
+                    buildPercentage: 100
+                };
+                res.status(200).json(RESPONSE_CACHE['supported']).end();
+                logger.info(`[${fip}] [${(rows2.length+rows3.length)>0?'✔️':'❌'} Queried] [GET /supported]`);
+            }
+
+            // get cached response
+            else {
+                RESPONSE_CACHE['supported'].buildPercentage = 100;
+                res.status(200).json(RESPONSE_CACHE['supported']).end();
+                logger.info(`[${fip}] [✔️  Cached] [GET /supported]`);
+            }
         }
 
         conn.end();
@@ -121,7 +142,7 @@ app.get('/search', async (req, res) => {
             // check for cached response
             if (RESPONSE_CACHE[queryString]) {
                 res.status(200).json(RESPONSE_CACHE[queryString]).end();
-                logger.info(`[${fip}] [✔️ Cached] [GET /search] [${queryString}]`);
+                logger.info(`[${fip}] [✔️  Cached] [GET /search] [${queryString}]`);
 
             // generate and cache response
             } else {
