@@ -32,6 +32,7 @@ const logger = winston.createLogger({
 // create express instance
 const app = express();
 let RESPONSE_CACHE = {};
+let IS_CACHE_STALE = true;
 
 // trust one layer of proxies (cf)
 app.set('trust proxy', 1);
@@ -72,16 +73,18 @@ app.get('/favicon.ico', async (req, res) => res.status(200).sendFile(__dirname+'
 app.get('/supported', async (req, res) => {
     const ip = (req.headers['cf-connecting-ip'] || req.ip);
     const fip = ip.split(ip.length>15?':':'.').map(n => ('000'+n).slice(ip.length>15?-4:-3)).join(ip.length>15?':':'.');
+    
     try {
         const conn = await mysql2.createConnection(config.databaseSettings);
         const [rows1] = await conn.execute(`SELECT * FROM ${config.statusTable};`);
 
-        // if currently building db or not cached
-        if (Number(rows1[0].value) < 100 || !RESPONSE_CACHE['supported']) {
+        // if DB is building, not cached, or stale
+        if (Number(rows1[0].value) < 100 || !RESPONSE_CACHE['supported'] || IS_CACHE_STALE) {
             const [rows2] = await conn.execute(`SELECT DISTINCT year FROM ${config.gradesTable};`);
             const [rows3] = await conn.execute(`SELECT DISTINCT departmentName FROM ${config.gradesTable};`);
 
             // generate and cache response
+            IS_CACHE_STALE = Number(rows1[0].value) < 100;
             RESPONSE_CACHE = {};
             RESPONSE_CACHE['supported'] = {
                 years: Object.values(rows2).map(e => e.year),
@@ -92,31 +95,10 @@ app.get('/supported', async (req, res) => {
             logger.info(`[${fip}] [${(rows2.length+rows3.length)>0?'✔️':'❌'} Queried] [GET /supported]`);
         }
 
-        // if response is cached
-        else if (RESPONSE_CACHE['supported']) {
-
-            // check if cache is stale
-            if(RESPONSE_CACHE['supported'].buildPercentage < 100) {
-                const [rows2] = await conn.execute(`SELECT DISTINCT year FROM ${config.gradesTable};`);
-                const [rows3] = await conn.execute(`SELECT DISTINCT departmentName FROM ${config.gradesTable};`);
-
-                // generate and cache response
-                RESPONSE_CACHE = {};
-                RESPONSE_CACHE['supported'] = {
-                    years: Object.values(rows2).map(e => e.year),
-                    departments: Object.values(rows3).map(e => e.departmentName),
-                    buildPercentage: 100
-                };
-                res.status(200).json(RESPONSE_CACHE['supported']).end();
-                logger.info(`[${fip}] [${(rows2.length+rows3.length)>0?'✔️':'❌'} Queried] [GET /supported]`);
-            }
-
-            // get cached response
-            else {
-                RESPONSE_CACHE['supported'].buildPercentage = 100;
-                res.status(200).json(RESPONSE_CACHE['supported']).end();
-                logger.info(`[${fip}] [✔️  Cached] [GET /supported]`);
-            }
+        // get cached response
+        else {
+            res.status(200).json(RESPONSE_CACHE['supported']).end();
+            logger.info(`[${fip}] [✔️  Cached] [GET /supported]`);
         }
 
         conn.end();
@@ -124,7 +106,7 @@ app.get('/supported', async (req, res) => {
     // catch and log errors, notify frontend
     } catch (err) {
         res.write('Backend Error', () => res.end());
-        logger.info(`[${fip}] ${err.stack}`);
+        logger.error(`[${fip}] ${err.stack}`);
     }
 });
 
@@ -163,7 +145,7 @@ app.get('/search', async (req, res) => {
 
     // catch and log errors, notify frontend
     } catch (err) {
-        logger.info(`[${fip}] ${err.stack}`);
+        logger.error(`[${fip}] ${err.stack}`);
         res.write('Backend Error', () => res.end());
     }
 });
