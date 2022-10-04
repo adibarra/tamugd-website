@@ -13,6 +13,7 @@ This project is dedicated to helping analyze the massive amounts of data release
 ## TODO:
 - [ ] Automatically update the database when new data is released
 - [ ] Add a way of sharing links
+- [ ] Integrate webpack
 
 ## How to use:
 1. Run [tamugd-parser](https://github.com/TAMU-GradeDistribution/tamugd-parser) to generate necessary database tables
