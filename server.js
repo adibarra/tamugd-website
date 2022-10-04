@@ -101,7 +101,7 @@ app.get('/supported', async (req, res) => {
             logger.info(`[${fip}] [✔️  Cached] [GET /supported]`);
         }
 
-        conn.end();
+        await conn.end();
 
     // catch and log errors, notify frontend
     } catch (err) {
@@ -130,7 +130,7 @@ app.get('/search', async (req, res) => {
             } else {
                 const conn = await mysql2.createConnection(config.databaseSettings);
                 const [rows] = await conn.execute(`SELECT year,semester,professorName,section,honors,avgGPA,numA,numB,numC,numD,numF,numI,numS,numU,numQ,numX FROM ${config.gradesTable} WHERE (departmentName="${dep}") AND (course="${course}");`);
-                conn.end();
+                await conn.end();
 
                 RESPONSE_CACHE[queryString] = rows;
                 res.status(200).json(RESPONSE_CACHE[queryString]).end();
