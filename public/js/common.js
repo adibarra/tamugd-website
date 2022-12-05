@@ -2,8 +2,7 @@ document.addEventListener('DOMContentLoaded', () => {
     updateThemeMode();
     $('#header_favicon').bind('click', () => window.location='/');
     $('#footer_favicon').bind('click', () => window.location='/');
-    $('#dark_theme')    .bind('click', () => { setCookie('style', 'dark'); updateThemeMode(); resetSettingsMenu(); });
-    $('#light_theme')   .bind('click', () => { setCookie('style', 'light'); updateThemeMode(); resetSettingsMenu(); });
+    $('#theme_toggle')  .bind('click', () => toggleThemeMode());
     window.dataLayer = window.dataLayer || [];
     function gtag() { dataLayer.push(arguments); }
     gtag('js', new Date());
@@ -38,9 +37,5 @@ function toggleThemeMode() {
 function updateThemeMode() {
     if (!getCookie('style')) setCookie('style', 'dark');
     $('body').attr('class', getCookie('style'));
-}
-
-function resetSettingsMenu() {
-    $('#settings_menu').prop('checked', false);
-    $('#theme_menu').prop('checked', false);
+    $('#theme_toggle').html('<i class="fa '+(getCookie('style') === 'light' ? 'fa-sun-o' : 'fa-moon-o')+'" title="Toggle Theme" aria-hidden="true"></i>');
 }

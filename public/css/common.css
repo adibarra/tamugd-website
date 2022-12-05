@@ -104,57 +104,18 @@ label {
 label:focus {
     outline: none;
 }
-.menu {
-    position: absolute;
-    top: 0;
-    right: -240px;
-    background-color: var(--background-color);
-    border: 1px solid var(--border-color);
-    border-radius: 10px 0 0 10px;
-    width: 240px;
-    height: 100%;
-    padding: 5px;
-    transition: transform 0.35s;
-    z-index: 3;
-}
-.menu label.menu-toggle {
+.theme-toggle {
     position: absolute;
     width: 1.25em;
     height: 1.5em;
     font-size: 1.2em;
-    top: .25em;
-    left: -1.25em;
+    top: .5em;
+    right: .35em;
+    cursor: pointer;
 }
-.menu label.menu-toggle i {
+.theme-toggle i {
     line-height: inherit;
     align-self: middle;
-}
-.menu li, .menu ul {
-    list-style-type: none;
-    margin: 0;
-    padding: 0;
-}
-.menu ul li a, .menu ul li label {
-    display: block;
-    text-align: center;
-    padding: 0 20px;
-    margin: 0 0 5px 0;
-    line-height: 60px;
-    text-decoration: none;
-    border-radius: 5px;
-    background: var(--foreground1-color);
-}
-.menu ul li a:hover, .menu ul li label:hover {
-    color: var(--accent-color);
-}
-.menu .menu label.menu-toggle {
-    background: none;
-}
-.menu-checkbox {
-    display: none;
-}
-.menu-checkbox:checked + .menu {
-    transform: translate3d(-240px, 0, 0);
 }
 .header-container {
     height: 3.25em;
