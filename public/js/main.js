@@ -25,21 +25,21 @@ document.addEventListener('DOMContentLoaded', () => {
         position: 'bottom', width: $('#course_range_chart_canvas').width(),
         titleBackground: 'rgba(102,102,102,.66)', background: 'rgba(102,102,102,.66)', titleContent: 'How to interpret:',
         content: 'The yellow area indicates the range between the highest'
-        +' and lowest GPAs acheived during the selected years and semesters.'
-        +' The small green bar indicates the average GPA which was acheived.'
+        +' and lowest GPAs achieved during the selected years and semesters.'
+        +' The small green bar indicates the average GPA which was achieved.'
     });
     $('#course_letter_chart_canvas').tipso({
         position: 'bottom', width: $('#course_letter_chart_canvas').width(),
         titleBackground: 'rgba(102,102,102,.66)', background: 'rgba(102,102,102,.66)', titleContent: 'How to interpret:',
         content: 'There is a section with a corresponding color for each of the'
         +' following grade letters: [A, B, C, D, F, Q]. This chart shows the percentage'
-        +' at which each grade letter was recieved relative to each other.'
+        +' at which each grade letter was received relative to each other.'
     });
     $('#course_difficulty_chart_canvas').tipso({
         position: 'bottom', width: $('#course_difficulty_chart_canvas').width(), tooltipHover: true,
         titleBackground: 'rgba(102,102,102,.66)', background: 'rgba(102,102,102,.66)', titleContent: 'How to interpret:',
         content: 'This chart takes a few of the statistics for the course and plugs them into the following <span class="color-white">'
-        +'<a href="https://github.com/TAMU-GradeDistribution/tamugd-website/blob/main/public/scripts/main.js#L522">'
+        +'<a href="https://github.com/TAMU-GradeDistribution/tamugd-website/blob/main/public/js/main.js#L522">'
         +' formula</a></span> to determine a relative difficulty score for each course.'
     });
 
