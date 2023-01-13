@@ -1,7 +1,3 @@
-# Add the 'status/triage' label for all new PRs
-status/triage:
-- '*'
-
 # Add 'type/ci-workflow-env' label for changes to supporting files
 type/ci-workflow-env:
 - '.github/**/*'
