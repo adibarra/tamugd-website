@@ -1,29 +1,35 @@
 {
   "name": "tamugd-website",
   "version": "1.3.0",
+  "packageManager": "pnpm@7.24.2",
   "description": "The goal of this project is to create a website which is capable of creating visualizations for the grade distribution reports published by Texas A&M University's Registrar's office.",
+  "author": "adibarra <github@adibarra.com> (https://adibarra.com)",
   "main": "server.js",
+  "scripts": {
+    "commit": "git-cz",
+    "start": "node server.js",
+    "taze": "taze major -I"
+  },
   "dependencies": {
     "compression": "^1.7.4",
-    "express": "^4.18.1",
-    "helmet": "^6.0.0",
+    "express": "^4.18.2",
+    "helmet": "^6.0.1",
     "mysql2": "^2.3.3",
     "winston": "^3.8.2",
     "winston-daily-rotate-file": "^4.7.1"
   },
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node server.js"
+  "devDependencies": {
+    "taze": "^0.8.5",
+    "commitizen": "^4.2.6",
+    "commitplease": "^3.2.0",
+    "cz-conventional-changelog": "^3.3.0"
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/TAMU-GradeDistribution/tamugd-website.git"
+  "commitplease": {
+    "style": "angular"
   },
-  "author": "adibarra <93070681+adibarra@users.noreply.github.com>",
-  "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/TAMU-GradeDistribution/tamugd-website/issues"
-  },
-  "homepage": "https://github.com/TAMU-GradeDistribution/tamugd-website#readme",
-  "packageManager": "yarn@3.2.3"
+  "config": {
+    "commitizen": {
+      "path": "node_modules/cz-conventional-changelog"
+    }
+  }
 }
