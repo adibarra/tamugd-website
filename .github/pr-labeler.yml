@@ -1,0 +1,21 @@
+# Add the 'status/triage' label for all new PRs
+status/triage:
+- '*'
+
+# Add 'type/ci-workflow-env' label for changes to supporting files
+type/ci-workflow-env:
+- '.github/**/*'
+- '.vscode/**/*'
+- '.editorconfig'
+- '.gitignore'
+- '.gitattributes'
+- '.nvmrc'
+
+# Add 'type/dependencies' label for changes to package.json or pnpm-lock.yaml files
+type/dependencies:
+- '**/package.json'
+- '**/pnpm-lock.yaml'
+
+# Add 'docs' label for changes to *.md files not in the .github folder
+type/docs:
+- any: ['LICENSE', '**/*.md', '!.github/**/*']
