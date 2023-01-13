@@ -1,6 +1,3 @@
-# sitemap
-sitemap.xml
-
 # config file
 tamugd_config.js
 
@@ -13,9 +10,4 @@ logs/
 */bundle/*.min.css
 
 # node dependencies
-.yarn/
 node_modules/
-package-lock.json
-yarn.lock
-.yarnrc.yml
-.pnp.*
