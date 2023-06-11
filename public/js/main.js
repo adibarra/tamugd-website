@@ -39,7 +39,7 @@ document.addEventListener('DOMContentLoaded', () => {
         position: 'bottom', width: $('#course_difficulty_chart_canvas').width(), tooltipHover: true,
         titleBackground: 'rgba(102,102,102,.66)', background: 'rgba(102,102,102,.66)', titleContent: 'How to interpret:',
         content: 'This chart takes a few of the statistics for the course and plugs them into the following <span class="color-white">'
-        +'<a href="https://github.com/TAMU-GradeDistribution/tamugd-website/blob/main/public/js/main.js#L522">'
+        +'<a href="https://github.com/adibarra/tamugd-website/blob/main/public/js/main.js#L522">'
         +' formula</a></span> to determine a relative difficulty score for each course.'
     });
 
