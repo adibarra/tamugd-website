@@ -1,183 +1,193 @@
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <link href="https://gd.adibarra.com/" rel="canonical" />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
-        <meta name="description" content="Graphically analyze grade distribution reports for any course at Texas A&amp;M University published by the registrar. Filter by professor, year, and semester." />
-        <meta name="keywords" content="a&amp;m, tamu, aggie, annex, grades, gpa, gpr, q drop, courses, scheduler" />
-        <meta name="robots" content="all" />
+  <head>
+    <meta charset="UTF-8">
+    <link href="https://gd.adibarra.com/" rel="canonical" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+    <meta name="description" content="Graphically analyze grade distribution reports for any course at Texas A&amp;M University published by the registrar. Filter by professor, year, and semester." />
+    <meta name="keywords" content="a&amp;m, tamu, aggie, annex, grades, gpa, gpr, q drop, courses, scheduler" />
+    <meta name="robots" content="all" />
 
-        <meta property="og:locale" content="en_US" />
-        <meta property="og:type" content="website" />
-        <meta property="og:title" content="TAMU Grade Distribution" />
-        <meta property="og:site_name" content="TAMU Grade Distribution" />
-        <meta property="og:url" content="https://gd.adibarra.com/" />
-        <meta property="og:image" content="https://gd.adibarra.com/img/favicon.ico" />
-        <meta property="og:description" content="Graphically analyze grade distribution reports for any course at Texas A&amp;M University published by the registrar. Filter by professor, year, and semester." />
+    <meta property="og:locale" content="en_US" />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="TAMU Grade Distribution" />
+    <meta property="og:site_name" content="TAMU Grade Distribution" />
+    <meta property="og:url" content="https://gd.adibarra.com/" />
+    <meta property="og:image" content="https://gd.adibarra.com/img/favicon.ico" />
+    <meta property="og:description" content="Graphically analyze grade distribution reports for any course at Texas A&amp;M University published by the registrar. Filter by professor, year, and semester." />
 
-        <title>TAMU Grade Distribution</title>
+    <title>TAMU Grade Distribution</title>
 
-        <!--css and fonts-->
-        <link rel="stylesheet" href="/css/bundle.min.css">
-        <link rel="stylesheet" href="/css/fonts.min.css">
-        <link rel="stylesheet" href="/css/common.min.css">
-        <link rel="stylesheet" href="/css/main.min.css">
-        <script src="https://www.googletagmanager.com/gtag/js?id=G-HS51DZ5HEM" async></script>
-        <script src="/js/bundle.min.js"></script>
-        <script src="/js/common.min.js"></script>
-        <script src="/js/main.min.js"></script>
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-HS51DZ5HEM"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-HS51DZ5HEM');
+    </script>
 
-        <!--favicons-->
-        <link rel="apple-touch-icon" sizes="180x180" href="/img/apple-touch-icon.png">
-        <link rel="icon" type="image/png" sizes="32x32" href="/img/favicon-32x32.png">
-        <link rel="icon" type="image/png" sizes="16x16" href="/img/favicon-16x16.png">
-        <link rel="manifest" href="/img/site.webmanifest">
-        <link rel="mask-icon" href="/img/safari-pinned-tab.svg" color="#5BBAD5">
-        <link rel="shortcut icon" href="/img/favicon.ico">
-        <meta name="msapplication-TileColor" content="#00A300">
-        <meta name="msapplication-config" content="/img/browserconfig.xml">
-    </head>
+    <!--css and fonts-->
+    <link rel="stylesheet" href="/css/bundle.min.css">
+    <link rel="stylesheet" href="/css/fonts.min.css">
+    <link rel="stylesheet" href="/css/common.min.css">
+    <link rel="stylesheet" href="/css/main.min.css">
 
-    <body class="dark">
-        <!--flex-wrapper-->
-        <div class="flex-wrapper">
-            <!--header-->
-            <div class="header-container">
-                <div class="header-bar">
-                    <div class="header-logo">
-                        <img id="header_favicon" src="/img/tamugd-logo.svg" alt='TAMUGD Logo'>
-                    </div>
-                    <div class="header-text">
-                        <h1>TAMU Grade Distribution</h1>
-                    </div>
-                    <div id="theme_toggle" class="theme-toggle">
-                        <i class="fa fa-moon-o" title="Toggle Theme" aria-hidden="true"></i>
-                    </div>
-                </div>
-            </div>
+    <!-- scripts -->
+    <script src="/js/bundle.min.js"></script>
+    <script src="/js/common.min.js"></script>
+    <script src="/js/main.min.js"></script>
 
-            <!--begin site-->
-            <div class="main-container">
-                <noscript>This website requires a JavaScript enabled or supported browser.</noscript>
+    <!-- favicons -->
+    <link rel="apple-touch-icon" sizes="180x180" href="/img/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/img/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/img/favicon-16x16.png">
+    <link rel="manifest" href="/img/site.webmanifest">
+    <link rel="mask-icon" href="/img/safari-pinned-tab.svg" color="#5BBAD5">
+    <link rel="shortcut icon" href="/img/favicon.ico">
+    <meta name="msapplication-TileColor" content="#00A300">
+    <meta name="msapplication-config" content="/img/browserconfig.xml">
+  </head>
 
-                <div id="build_banner" class="notification-banner-container hidden" data-nosnippet>
-                    Rebuilding database 🛠️ [<span id="build_percentage">0</span>%]. Reports will be incomplete for a bit.
-                </div>
-
-                <div class="search-layout-container">
-                    <div class="search-container">
-                        <div class="inner-search-container">
-                            <h3>Department:</h3>
-                            <select id="department_select" class="chosen-select" tabindex="0" required>
-                                <option label="NULL"></option>
-                            </select>
-                            <h3>Course:</h3>
-                            <div id="course_select" class="chosen-container-single">
-                                <input id="course_field" class="chosen-single" type="text" placeholder="EX: 229" tabindex="0" required>
-                            </div>
-                            <div class="search-button-container">
-                                <button id="search_button" type="submit" name="Search" tabindex="0">
-                                    <i class="fa fa-search fa-lg color-white" title="Search"></i>
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="plot-layout-container">
-                    <div class="plot-container">
-                        <div class="inner-plot-container">
-                            <canvas id="gpa_chart_canvas" aria-label="AVG Professor GPA Chart" role="img"></canvas>
-                        </div>
-                    </div>
-
-                    <div class="settings-container">
-                        <div class="professor-semester-container">
-                            <div class="professor-select-container">
-                                <select id="professor_select" class="chosen-select" data-placeholder="Search for a course to begin" tabindex="0" multiple></select>
-                            </div>
-                            <div>&nbsp;</div>
-                            <div class="semester-select-container">
-                                <select id="semester_select" class="chosen-select" data-placeholder="Click here to select semesters" tabindex="0" multiple>
-                                    <option value="SPRING" selected>Spring</option>
-                                    <option value="SUMMER">Summer</option>
-                                    <option value="FALL" selected>Fall</option>
-                                </select>
-                            </div>
-                        </div>
-                        <div class="options-container">
-                            <div class="inner-options-header-container">
-                                <h2>Options:</h2>
-                            </div>
-                            <div class="inner-options-input-container">
-                                <select id="honors_select" class="chosen-select" tabindex="0">
-                                    <option value="EXHONORS" selected>Exclude Honors</option>
-                                    <option value="INHONORS">Include Honors</option>
-                                    <option value="ONHONORS">Honors Only</option>
-                                </select>
-                                <button id="new_chart_colors_button" class="regenerate-gpa-plot-colors-button" type="button" name="Generate New Plot Colors" tabindex="0">
-                                    &nbsp;<i class="fa fa-refresh" title="Generate New Plot Colors"></i>&nbsp;&nbsp;New Plot Colors&nbsp;
-                                </button>
-                                <button id="toggle_raw_data_button" class="toggle-raw-data-button" type="button" name="Toggle Raw Data" tabindex="0">
-                                    &nbsp;<i class="fa fa-caret-square-o-up" title="Display Raw Data"></i>&nbsp;&nbsp;Display Raw Data&nbsp;
-                                </button>
-                            </div>
-                        </div>
-                        <div class="year-container">
-                            <div class="inner-year-container">
-                                <input id='year_range' type="hidden" class="slider-input" value="0,9999999">
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="course-stats-layout-container">
-                    <div class="course-stats-container">
-                        <div class=course-range-chart-container>
-                            <canvas id="course_range_chart_canvas" aria-label="Course GPA Range Chart" role="img"></canvas>
-                        </div>
-                        <div class=course-stats-letter-container>
-                            <canvas id="course_letter_chart_canvas" aria-label="Course Letter Distribution Chart" role="img"></canvas>
-                        </div>
-                        <div class=course-stats-difficulty-container>
-                            <canvas id="course_difficulty_chart_canvas" aria-label="Course Difficulty Chart" role="img"></canvas>
-                        </div>
-                    </div>
-                </div>
-
-                <div id="raw_data_layout_container" class="raw-data-layout-container">
-                    <div class="raw-data-container">
-                        <div class="inner-raw-data-container">
-                            <div id="raw_data_table_container"></div>
-                        </div>
-                    </div>
-                    <div id="back_to_top" class="back-to-top"><i class="fa fa-arrow-up fa-lg" title="Scroll to top"></i></div>
-                </div>
-            </div>
-
-            <!--footer-->
-            <div class="footer-container">
-                <div id="footer_bar" class="footer-bar">
-                    <div class="footer-left">
-                        <div class="footer-subtext-left">
-                            <p><span class="color-standard"><a href="https://github.com/adibarra/tamugd-website">Project Repo</a></span></p>
-                            <p>Code licensed under the <span class="color-standard"><a href="https://github.com/adibarra/tamugd-website/blob/main/LICENSE">MIT license</a></span></p>
-                        </div>
-                    </div>
-
-                    <div class="footer-logo">
-                        <img id="footer_favicon" src="/img/tamugd-logo.svg" alt='TAMUGD Logo'>
-                    </div>
-
-                    <div class="footer-right">
-                        <div class="footer-subtext-right">
-                            <p><i class="fa fa-github fa-lg" title="Github logo"></i><span class="color-standard"> @<a href="https://github.com/adibarra">adibarra</a></span></p>
-                            <p><i class="fa fa-envelope fa-lg" title="Email icon"></i><span class="color-standard"> <a href="mailto://tamugd@adibarra.com">Contact me</a></span></p>
-                        </div>
-                    </div>
-                </div>
-            </div>
+  <body class="dark">
+    <!-- flex-wrapper -->
+    <div class="flex-wrapper">
+      <!-- header -->
+      <div class="header-container">
+        <div class="header-bar">
+          <div class="header-logo">
+            <img id="header_favicon" src="/img/tamugd-logo.svg" alt='TAMUGD Logo'>
+          </div>
+          <div class="header-text">
+            <h1>TAMU Grade Distribution</h1>
+          </div>
+          <div id="theme_toggle" class="theme-toggle">
+            <i class="fa fa-moon-o" title="Toggle Theme" aria-hidden="true"></i>
+          </div>
         </div>
-    </body>
+      </div>
+
+      <!-- begin site -->
+      <div class="main-container">
+        <noscript>This website requires a JavaScript enabled or supported browser.</noscript>
+
+        <div id="build_banner" class="notification-banner-container hidden" data-nosnippet>
+          Rebuilding database 🛠️ [<span id="build_percentage">0</span>%]. Reports will be incomplete for a bit.
+        </div>
+
+        <div class="search-layout-container">
+          <div class="search-container">
+            <div class="inner-search-container">
+              <h3>Department:</h3>
+              <select id="department_select" class="chosen-select" tabindex="0" required>
+                <option label="NULL"></option>
+              </select>
+              <h3>Course:</h3>
+              <div id="course_select" class="chosen-container-single">
+                <input id="course_field" class="chosen-single" type="text" placeholder="EX: 229" tabindex="0" required>
+              </div>
+              <div class="search-button-container">
+                <button id="search_button" type="submit" name="Search" tabindex="0">
+                  <i class="fa fa-search fa-lg color-white" title="Search"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="plot-layout-container">
+          <div class="plot-container">
+            <div class="inner-plot-container">
+              <canvas id="gpa_chart_canvas" aria-label="AVG Professor GPA Chart" role="img"></canvas>
+            </div>
+          </div>
+
+          <div class="settings-container">
+            <div class="professor-semester-container">
+              <div class="professor-select-container">
+                <select id="professor_select" class="chosen-select" data-placeholder="Search for a course to begin" tabindex="0" multiple></select>
+              </div>
+              <div>&nbsp;</div>
+              <div class="semester-select-container">
+                <select id="semester_select" class="chosen-select" data-placeholder="Click here to select semesters" tabindex="0" multiple>
+                  <option value="SPRING" selected>Spring</option>
+                  <option value="SUMMER">Summer</option>
+                  <option value="FALL" selected>Fall</option>
+                </select>
+              </div>
+            </div>
+            <div class="options-container">
+              <div class="inner-options-header-container">
+                <h2>Options:</h2>
+              </div>
+              <div class="inner-options-input-container">
+                <select id="honors_select" class="chosen-select" tabindex="0">
+                  <option value="EXHONORS" selected>Exclude Honors</option>
+                  <option value="INHONORS">Include Honors</option>
+                  <option value="ONHONORS">Honors Only</option>
+                </select>
+                <button id="new_chart_colors_button" class="regenerate-gpa-plot-colors-button" type="button" name="Generate New Plot Colors" tabindex="0">
+                  &nbsp;<i class="fa fa-refresh" title="Generate New Plot Colors"></i>&nbsp;&nbsp;New Plot Colors&nbsp;
+                </button>
+                <button id="toggle_raw_data_button" class="toggle-raw-data-button" type="button" name="Toggle Raw Data" tabindex="0">
+                  &nbsp;<i class="fa fa-caret-square-o-up" title="Display Raw Data"></i>&nbsp;&nbsp;Display Raw Data&nbsp;
+                </button>
+              </div>
+            </div>
+            <div class="year-container">
+              <div class="inner-year-container">
+                <input id='year_range' type="hidden" class="slider-input" value="0,9999999">
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="course-stats-layout-container">
+          <div class="course-stats-container">
+            <div class=course-range-chart-container>
+              <canvas id="course_range_chart_canvas" aria-label="Course GPA Range Chart" role="img"></canvas>
+            </div>
+            <div class=course-stats-letter-container>
+              <canvas id="course_letter_chart_canvas" aria-label="Course Letter Distribution Chart" role="img"></canvas>
+            </div>
+            <div class=course-stats-difficulty-container>
+              <canvas id="course_difficulty_chart_canvas" aria-label="Course Difficulty Chart" role="img"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <div id="raw_data_layout_container" class="raw-data-layout-container">
+          <div class="raw-data-container">
+            <div class="inner-raw-data-container">
+              <div id="raw_data_table_container"></div>
+            </div>
+          </div>
+          <div id="back_to_top" class="back-to-top"><i class="fa fa-arrow-up fa-lg" title="Scroll to top"></i></div>
+        </div>
+      </div>
+
+      <!-- footer -->
+      <div class="footer-container">
+        <div id="footer_bar" class="footer-bar">
+          <div class="footer-left">
+            <div class="footer-subtext-left">
+              <p><span class="color-standard"><a href="https://github.com/adibarra/tamugd-website">Project Repo</a></span></p>
+              <p>Code licensed under the <span class="color-standard"><a href="https://github.com/adibarra/tamugd-website/blob/main/LICENSE">MIT license</a></span></p>
+            </div>
+          </div>
+
+          <div class="footer-logo">
+            <img id="footer_favicon" src="/img/tamugd-logo.svg" alt='TAMUGD Logo'>
+          </div>
+
+          <div class="footer-right">
+            <div class="footer-subtext-right">
+              <p><i class="fa fa-github fa-lg" title="Github logo"></i><span class="color-standard"> @<a href="https://github.com/adibarra">adibarra</a></span></p>
+              <p><i class="fa fa-envelope fa-lg" title="Email icon"></i><span class="color-standard"> <a href="mailto://tamugd@adibarra.com">Contact me</a></span></p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </body>
 </html>
