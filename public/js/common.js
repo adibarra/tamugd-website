@@ -10,7 +10,7 @@ function isElementVisible(element) {
 }
 
 function isDark() {
-  if (localStorage)
+  if (localStorage && localStorage.getItem('dark'))
     return JSON.parse(localStorage.getItem('dark'));
   return true;
 }
