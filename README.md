@@ -1,3 +1,6 @@
+> [!CAUTION]
+> **⚠️ This project is now deprecated and is no longer maintained. ⚠️**
+
 # tamugd-website
 This project is dedicated to helping analyze the massive amounts of data released every semester by Texas A&M University's Registrar's office.
 
